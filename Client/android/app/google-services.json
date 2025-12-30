@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "408673844024",
+    "project_id": "crimenet-5ae90",
+    "storage_bucket": "crimenet-5ae90.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:408673844024:android:48d458f759a46bc7585fcd",
+        "android_client_info": {
+          "package_name": "com.example.crimenet_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBJbBgmWyQTkzzzYcmm4aYXl3A_gZJqxo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
