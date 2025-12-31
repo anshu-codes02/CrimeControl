@@ -5,9 +5,9 @@ _Revolutionizing collaborative crime-solving with real-time chat, secure media, 
 
 ---
 
-## 🎥 Demo Video
-
-[![CrimeNet Demo](https://img.shields.io/badge/Watch%20Demo-Video-red?style=for-the-badge&logo=youtube)](https://drive.google.com/file/d/1U82FgrFXAnIIa0UyxkKrZ8IEyyp0WFFY/view?usp=drive_link)
+<!-- ## 🎥 Demo Video -->
+<!-- 
+[![CrimeNet Demo](https://img.shields.io/badge/Watch%20Demo-Video-red?style=for-the-badge&logo=youtube)](https://drive.google.com/file/d/1U82FgrFXAnIIa0UyxkKrZ8IEyyp0WFFY/view?usp=drive_link) -->
 
 <!-- Alternative video embedding options:
 For YouTube: [![Demo Video](http://img.youtube.com/vi/VIDEO_ID/0.jpg)](http://www.youtube.com/watch?v=VIDEO_ID)
@@ -16,7 +16,7 @@ For direct video: <video width="800" controls><source src="demo_video.mp4" type=
 
 ---
 
-## 📸 Screenshots
+<!-- ## 📸 Screenshots
 
 ### Login & Authentication
 <div align="center">
@@ -114,22 +114,7 @@ CrimeNet is a full-stack, modern platform designed for collaborative crime inves
 
 ---
 
-## 🏗️ Project Architecture
 
-```mermaid
-graph TD
-  A[Flutter App] -- REST/WS --> B[Spring Boot API]
-  B -- SQL --> C[PostgreSQL]
-  A -- Media Upload --> D[Firebase Storage]
-  B -- Media URL --> A
-```
-
-- **Flutter App:** Handles UI, state, and direct media uploads to Firebase.
-- **Spring Boot API:** Manages authentication, business logic, and real-time chat.
-- **PostgreSQL:** Stores user, case, and application data.
-- **Firebase Storage:** Stores images and videos, serving URLs to the app.
-
----
 
 ## ⚡ Installation & Setup
 
@@ -179,4 +164,4 @@ For questions or collaboration, reach out via [LinkedIn](https://www.linkedin.co
 
 ---
 
-**Impress, inspire, and innovate with CrimeNet.** 
+**Impress, inspire, and innovate with CrimeNet.** -->

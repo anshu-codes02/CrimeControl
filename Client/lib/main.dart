@@ -15,7 +15,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const CrimeSolverApp());
+  runApp(const CrimeControlApp());
 }
 
 class MainNavigation extends StatefulWidget {
@@ -28,7 +28,7 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _selectedIndex = 0;
   
-  // Simple, direct screen list without nested navigations
+  // direct screen lists
   static List<Widget> _screens = <Widget>[
     CasesScreen(),
     DMInboxScreen(),
@@ -129,15 +129,15 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 }
 
-class CrimeSolverApp extends StatelessWidget {
-  const CrimeSolverApp({super.key});
+class CrimeControlApp extends StatelessWidget {
+  const CrimeControlApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
       child: MaterialApp(
-        title: 'Crime Solver',
+        title: 'Crime Control',
         debugShowCheckedModeBanner: false,
         themeMode: ThemeMode.dark,
         darkTheme: ThemeData(
