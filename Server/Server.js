@@ -10,6 +10,10 @@ app.use(express.json());
 
 
 
+app.use(require("./middleware/errorHandler"));
+
+
+
 /*
 [Flutter Client]
 |
