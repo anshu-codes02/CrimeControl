@@ -40,7 +40,7 @@ const UserSchema = new mongoose.Schema(
     expertiseAreas: [String],
     badges: [String],
     specializationsList: [String],
-
+    
     organizationVerified: {
       type: Boolean,
       default: false

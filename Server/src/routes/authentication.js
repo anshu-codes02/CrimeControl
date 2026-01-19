@@ -43,8 +43,8 @@ router.get("/me", auth, async (req, res, next) => {
   res.json(user);
 }catch(err){
   next(err);
-}
+} 
 });
 
 
-
+module.exports=router;
