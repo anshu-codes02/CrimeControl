@@ -1,22 +1,24 @@
-# CrimeControl
+## CrimeControl 👮‍♂️
 
 **Tagline:**  
 _Revolutionizing collaborative crime-solving with real-time chat, secure media, and recruiter-driven case management._
 
----
 
-## 🚀 Introduction
+
+
+## Introduction 🚀
 
 CrimeControl is a full-stack, modern platform designed for collaborative crime investigation and recruitment. Built with Flutter, Node.js, Socket.IO, Firebase Storage, it empowers investigators, recruiters, and Solvers to work together seamlessly—featuring secure authentication, real-time communication, and robust media handling.
 
----
 
-## Role Based Access 
 
-### Organization
- Organizations like investigating authorities or individual entity can use this platform and post unsolved cases:
 
- **Features of Organization**
+## Role Based Access 🛡️
+
+### 🏢Organization
+Organizations like investigating authorities or individual entity can use this platform and post unsolved cases:
+
+**✨ Features of Organization**
  
 | Feature | Description |
 |---------|-------------|
@@ -28,10 +30,11 @@ CrimeControl is a full-stack, modern platform designed for collaborative crime i
 | 📈 **Case Status Updates** | Update and manage case status through workflow stages.|
 | 📋 **Badge & Rating** | Provide Badge and Rating to solvers who help in solving cases.|
 
-### Solver
+
+### 🕵️‍♂️Solver 
 Solver is an individual in the community that can help in solving cases posted by Organization and can be hired by any Recruiter.  
 
-**Features of Solver**
+**✨ Features of Solver**
 
 | Feature | Description |
 |---------|-------------|
@@ -43,8 +46,11 @@ Solver is an individual in the community that can help in solving cases posted b
 | 💰 **Earn Opportunities** | Get hired by recruiters for investigation work. |
 | 💭 **Solver Collaboration Chat** | Real-time messaging with other solvers working on the same case. |
 
-### Recruiter
-Recruiter is an individual or entity that can use this platform for hiring solvers for any specidic case.
+
+### 🧑‍💼Recruiter 
+Recruiter is an individual or entity that can use this platform for hiring solvers for any specific case.
+
+**✨ Features of Recruiter**
 
 | Feature | Description |
 |---------|-------------|
@@ -54,10 +60,10 @@ Recruiter is an individual or entity that can use this platform for hiring solve
 | 💬 **Direct Communication** | Real-time messaging with applicants during hiring process. |
 | ⭐ **Rate & Review** | Provide ratings and feedback on solver performance. |
 
+
 ---
 
-
-## 🛠️ Tech Stack
+## Tech Stack 🛠️
 
 - **Frontend:** Flutter (Dart)
 - **Backend:** Node.js
@@ -66,5 +72,3 @@ Recruiter is an individual or entity that can use this platform for hiring solve
 - **Authentication:** JWT (JSON Web Token)
 - **Real-Time:** Socket.IO
 - **State Management:** Provider (Flutter)
-
----
