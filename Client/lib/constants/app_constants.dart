@@ -1,8 +1,8 @@
 class AppConstants {
-  static const String baseUrl = 'http://10.63.65.192:8080/api';
+  static const String baseUrl = 'http://10.127.0.184:5000/api';
   static const String authUrl = '$baseUrl/auth';
   static const String casesUrl = '$baseUrl/cases';
-  static const String usersUrl = '$baseUrl/users';
+  static const String usersUrl = '$baseUrl/auth';
 
   // Enhanced Colors with better contrast and modern palette
   static const int primaryColor = 0xFF2563EB; // Enhanced blue

@@ -22,10 +22,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _lastNameController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  String _selectedRole = 'SOLVER';
+  String? _selectedRole;
   List<String> _selectedExpertise = [];
   final List<String> roles = ['SOLVER', 'ORGANIZATION', 'ADMIN', 'RECRUITER'];
-  
+
   // Available expertise areas matching backend categories
   final List<String> _availableExpertise = [
     'Theft',
@@ -124,7 +124,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: AppConstants.spacingMd),
-                  
+
                   // Last Name Field
                   EnhancedTextField(
                     controller: _lastNameController,
@@ -139,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: AppConstants.spacingMd),
-                  
+
                   // Username Field
                   EnhancedTextField(
                     controller: _usernameController,
@@ -157,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: AppConstants.spacingMd),
-                  
+
                   // Email Field
                   EnhancedTextField(
                     controller: _emailController,
@@ -169,14 +169,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
                       }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      if (!RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      ).hasMatch(value)) {
                         return 'Please enter a valid email';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: AppConstants.spacingMd),
-                  
+
                   // Password Field
                   EnhancedTextField(
                     controller: _passwordController,
@@ -207,90 +209,159 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   const SizedBox(height: AppConstants.spacingLg),
-                  
+
                   // Role Selection
                   Container(
+                    // optional safety min height
+                    //constraints: const BoxConstraints(minHeight: 64),
                     decoration: BoxDecoration(
                       color: Color(AppConstants.surfaceColor),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.radiusLg,
+                      ),
                       border: Border.all(
-                        color: Color(AppConstants.textLightColor).withOpacity(0.3),
+                        color: Color(
+                          AppConstants.textLightColor,
+                        ).withOpacity(0.3),
                       ),
                     ),
                     child: DropdownButtonFormField<String>(
                       value: _selectedRole,
-                      items: roles.map((role) {
-                        IconData roleIcon;
-                        String roleDescription;
-                        switch (role) {
-                          case 'SOLVER':
+                      isExpanded: true,
+                      // make menu items taller so descriptions fit
+                      itemHeight: 72,
+
+                      // KEY: render a compact single-line selected widget
+                      selectedItemBuilder: (context) {
+                        return roles.map((role) {
+                          final IconData roleIcon;
+                          if (role == 'SOLVER')
                             roleIcon = Icons.psychology_rounded;
-                            roleDescription = 'Help solve cases and collaborate';
-                            break;
-                          case 'ORGANIZATION':
+                          else if (role == 'ORGANIZATION')
                             roleIcon = Icons.business_rounded;
-                            roleDescription = 'Post cases and seek help';
-                            break;
-                          case 'ADMIN':
+                          else if (role == 'ADMIN')
                             roleIcon = Icons.admin_panel_settings_rounded;
-                            roleDescription = 'System administration';
-                            break;
-                          case 'RECRUITER':
+                          else if (role == 'RECRUITER')
                             roleIcon = Icons.people_rounded;
-                            roleDescription = 'Recruit talent for cases';
-                            break;
-                          default:
+                          else
                             roleIcon = Icons.person_rounded;
-                            roleDescription = '';
-                        }
-                        return DropdownMenuItem(
-                          value: role,
-                          child: Row(
-                            children: [
-                              Icon(roleIcon, size: 20),
-                              const SizedBox(width: AppConstants.spacingSm),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
+
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              children: [
+                                Icon(roleIcon, size: 18),
+                                const SizedBox(width: AppConstants.spacingSm),
+                                Expanded(
+                                  child: Text(
                                     role.replaceAll('_', ' '),
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w500,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList();
+                      },
+
+                      // menu items (rich two-line items in popup)
+                      items:
+                          roles.map((role) {
+                            IconData roleIcon;
+                            String roleDescription;
+                            switch (role) {
+                              case 'SOLVER':
+                                roleIcon = Icons.psychology_rounded;
+                                roleDescription =
+                                    'Help solve cases and collaborate';
+                                break;
+                              case 'ORGANIZATION':
+                                roleIcon = Icons.business_rounded;
+                                roleDescription = 'Post cases and seek help';
+                                break;
+                              case 'ADMIN':
+                                roleIcon = Icons.admin_panel_settings_rounded;
+                                roleDescription = 'System administration';
+                                break;
+                              case 'RECRUITER':
+                                roleIcon = Icons.people_rounded;
+                                roleDescription = 'Recruit talent for cases';
+                                break;
+                              default:
+                                roleIcon = Icons.person_rounded;
+                                roleDescription = '';
+                            }
+
+                            return DropdownMenuItem<String>(
+                              value: role,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(roleIcon, size: 20),
+                                  const SizedBox(width: AppConstants.spacingSm),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          role.replaceAll('_', ' '),
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium?.copyWith(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (roleDescription.isNotEmpty)
+                                          Text(
+                                            roleDescription,
+                                            style: Theme.of(
+                                              context,
+                                            ).textTheme.bodySmall?.copyWith(
+                                              color: Color(
+                                                AppConstants.textLightColor,
+                                              ),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                  if (roleDescription.isNotEmpty)
-                                    Text(
-                                      roleDescription,
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: Color(AppConstants.textLightColor),
-                                      ),
-                                    ),
                                 ],
                               ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList(),
+
                       onChanged: (value) {
                         setState(() {
-                          _selectedRole = value!;
-                          _selectedExpertise.clear(); // Clear expertise when role changes
+                          _selectedRole = value;
+                          _selectedExpertise.clear();
                         });
                       },
-                      decoration: const InputDecoration(
-                        labelText: 'Select Your Role',
-                        prefixIcon: Icon(Icons.verified_user_rounded),
+
+                      decoration: InputDecoration(
+                        // CONDITIONALLY show label only when nothing is selected
+                        labelText:
+                            _selectedRole == null ? 'Select Your Role' : null,
+
+                        // Alternatively you can always use hintText; we use conditional labelText for exact control
+                        prefixIcon: const Icon(Icons.verified_user_rounded),
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
+                        contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppConstants.spacingMd,
-                          vertical: AppConstants.spacingSm,
+                          vertical: 14,
                         ),
                       ),
-                      borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+
                       dropdownColor: Color(AppConstants.surfaceColor),
-                      style: theme.textTheme.bodyMedium,
-                      isExpanded: true,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
                   const SizedBox(height: 22),
@@ -359,10 +430,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
-    
+
     try {
       final userJson = {
         'username': _usernameController.text.trim(),
@@ -373,17 +444,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'password': _passwordController.text.trim(),
         'expertiseAreas': _selectedExpertise,
       };
-      
+
       // Debug logging for registration data
       print('=== REGISTRATION DEBUG ===');
       print('Registration Data: $userJson');
       print('Selected Expertise: $_selectedExpertise');
       print('Selected Expertise Length: ${_selectedExpertise.length}');
       print('=========================');
-      
+
       final authService = AuthService();
       await authService.register(userJson);
-      
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -392,7 +463,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      
+
       // Navigate to login screen
       Navigator.pushReplacement(
         context,

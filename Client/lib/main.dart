@@ -325,7 +325,7 @@ class AuthWrapper extends StatelessWidget {
     if (authProvider.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (authProvider.isLoggedIn) {
+    if (authProvider.isLoggedIn && authProvider.user!=null) {
       return const MainNavigation();
     } else {
       return const LoginScreen();

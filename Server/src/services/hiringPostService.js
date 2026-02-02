@@ -1,4 +1,4 @@
-const User=require("../models/userModel");
+const User=require("../models/user/user");
 const AppError = require("../utils/appError");
 const HiringPost=require("../models/hiring/hiringPost");
 

@@ -59,14 +59,14 @@ class _CasesScreenState extends State<CasesScreen> {
         final user = widget.user ?? authProvider.user;
         
         if (user == null) {
-          print("darpan null user - user not logged in or failed to fetch");
+          print("null user - user not logged in or failed to fetch");
         } else {
-          print("darpan user found: ${user.username}, role: ${user.role}");
+          print("user found: ${user.username}, role: ${user.role}");
         }
         
         final canPost =
             user != null && (user.role == 'ADMIN' || user.role == 'ORGANIZATION');
-        print("darpan canPost: $canPost, user role: ${user?.role}");
+        print(" canPost: $canPost, user role: ${user?.role}");
         
         final theme = Theme.of(context);
         return Scaffold(

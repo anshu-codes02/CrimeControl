@@ -5,10 +5,12 @@ const crimeCaseService = require('../services/crimeCaseService');
 const CrimeCase = require('../models/case/crimeCase');
 const caseCategory = require('../models/enums/caseCategory');
 const { auth, isOrganization } = require('../middlewares/auth');
+const {generateUploadUrl, generateReadUrl, extractS3Key}=require("../services/s3Presign");
 
 //Get all cases
 router.get('/', async (req, res) => {
     try {
+        
         const cases = await CrimeCase.find();
         const summaries = cases.map((c) => ({
             id: c._id,
@@ -45,13 +47,47 @@ router.get('/:id', async (req, res) => {
 });
 
 //create a Case
-router.post('/', auth, isOrganization, async (req, res) => {
+router.post('/create', auth, isOrganization, async (req, res) => {
     try {
         const createCase = await crimeCaseService.createCase(req.body, req.user.id);
         res.status(201).json({ success: true, data: createCase });
     } catch (err) {
         res.status(500).json({ success: false, message: "Failed to create case" });
     }
+});
+
+router.get('/getSignedUrls/:id', auth, async(req, res)=>{
+   try
+   {
+      const caseDoc = await CrimeCase.findById(req.params.id);
+
+      let presignedImgUrls=[];
+     
+      if(Array.isArray(caseDoc.imageUrls))
+      {
+        presignedImgUrls= await Promise.all( caseDoc.imageUrls.map((url)=>{
+           const key = extractS3Key(url);
+          return generateReadUrl(key);
+        })
+      );
+      }
+      else if(caseDoc.imageUrl!=null)
+      {
+        const key = extractS3Key(caseDoc.imageUrl);
+        presignedImgUrls = [await generateReadUrl(key)];
+      }
+
+      let presignedMediaUrl = null;
+    if (caseDoc.mediaUrl) {
+      const mediaKey = extractS3Key(caseDoc.mediaUrl);
+      presignedMediaUrl = await generateReadUrl(mediaKey);
+    }
+
+    res.status(200).json({presignedImgUrls: presignedImgUrls, presignedMediaUrl: presignedMediaUrl});
+
+   }catch(e){
+
+   }
 });
 
 //Update a case
@@ -74,22 +110,36 @@ router.get('/categories', async (req, res) => {
     }
 });
 
+//presign-url
+router.post('/presign-upload', auth, isOrganization, async(req, res, next)=>{
+  try{
+         const { filename, ContentType } = req.body;
+    if (!filename || !ContentType)
+      return res.status(400).json({ message: 'Missing fileName or contentType' });
+
+    const data = await generateUploadUrl({ filename, ContentType });
+    res.json(data);
+  }catch(e){
+    next(e);
+  }
+});
+
 //related to comments
 
 //get all comments for a case
 router.get('/:id/comments', async (req, res) => {
     try {
-        const crimeCase = await CrimeCase.findById(req.params.id);
+        const crimeCase = await CrimeCase.findById(req.params.id).populate('comments.user', 'username');;
         if (!crimeCase) {
             return res.status(404).json({ success: false, message: "Case not found" });
         }
         const comments = crimeCase.comments.map((c) => ({
-            id: c._id,
-            userId: c.user?._id || null,
-            author: c.user?.username || "Unknown",
-            content: c.content,
-            createdAt: c.createdAt || null,
-        }));
+      id: c._id.toString(),
+      userId: c.user?._id?.toString() || null,
+      author: c.user?.username || "Unknown",
+      content: c.content,
+      createdAt: c.createdAt ? c.createdAt.toISOString() : null,
+    }));
 
         res.status(200).json({ success: true, data: comments });
     } catch (err) {

@@ -21,9 +21,21 @@ class CaseService {
     
     return headers;
   }
+  Future<Map<String, dynamic>> getSignedUrls(String caseId) async{
+     final headers = await _getHeaders();
+     final response = await http.get(
+    Uri.parse('${AppConstants.casesUrl}/getSignedUrls/$caseId'),
+    headers:headers
+  );
 
+  if (response.statusCode != 200) {
+    throw Exception('Failed to fetch case details');
+  }
+
+   return jsonDecode(response.body) as Map<String, dynamic>;
+  }
   /// Close a case
-  Future<Map<String, dynamic>> closeCase(int caseId) async {
+  Future<Map<String, dynamic>> closeCase(String caseId) async {
     try {
       final headers = await _getHeaders();
       final response = await http.put(
@@ -49,7 +61,7 @@ class CaseService {
   }
 
   /// Delete a case (only allowed 24 hours after closing)
-  Future<Map<String, dynamic>> deleteCase(int caseId) async {
+  Future<Map<String, dynamic>> deleteCase(String caseId) async {
     try {
       final headers = await _getHeaders();
       final response = await http.delete(
@@ -75,7 +87,7 @@ class CaseService {
   }
 
   /// Check if a case can be deleted
-  Future<Map<String, dynamic>> canDeleteCase(int caseId) async {
+  Future<Map<String, dynamic>> canDeleteCase(String caseId) async {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
@@ -127,7 +139,7 @@ class CaseService {
   }
 
   /// Get case by ID
-  Future<Map<String, dynamic>> getCaseById(int caseId) async {
+  Future<Map<String, dynamic>> getCaseById(String caseId) async {
     try {
       final headers = await _getHeaders();
       final response = await http.get(

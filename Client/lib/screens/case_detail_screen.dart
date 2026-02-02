@@ -28,6 +28,32 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   bool _videoInitialized = false;
   User? _currentUser;
   Map<String, dynamic>? _deletionStatus;
+  List<dynamic>? presignedImgUrls;
+  String? mediaUrl;
+  bool isLoading=true;
+
+  Future<void> loadSignedUrls() async {
+  try {
+    final data = await _caseService.getSignedUrls(widget.caseItem.id);
+
+   if (!mounted) return;
+
+    setState(() {
+      presignedImgUrls =List<String>.from(data['presignedImgUrls'] ?? []);
+      mediaUrl=data['presignedMediaUrl'] as String;
+      isLoading = false;
+      
+    });
+
+    _initVideo();
+  } catch (e) {
+    if (!mounted) return;
+    setState(() {
+      isLoading = false;
+    });
+  }
+}
+
 
   @override
   void initState() {
@@ -41,9 +67,10 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
     print('DEBUG: imageUrls = ${c.imageUrls}');
     print('DEBUG: imageUrls length = ${c.imageUrls.length}');
     print('DEBUG: imageUrls isEmpty = ${c.imageUrls.isEmpty}');
+    
+     loadSignedUrls();
     _commentsFuture = _authService.fetchCaseComments(widget.caseItem.id);
-
-    _initVideo();
+    
     _loadCurrentUser();
     if (widget.caseItem.isClosed) {
       _checkDeletionStatus();
@@ -51,26 +78,25 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   }
 
   void _initVideo() {
-    final url = widget.caseItem.mediaUrl;
-    if (url != null && url.isNotEmpty) {
+   
+    final signedMediaUrl=mediaUrl;
+    bool isVideo=false;
+
+    if (signedMediaUrl != null && signedMediaUrl.isNotEmpty) {
       // Check if it's a video by looking for video extensions in the URL
       // or if it's from Firebase Storage and contains video extensions
-      final isVideo = url.contains('.mp4') ||
-          url.contains('.webm') ||
-          url.contains('.mov') ||
-          url.contains('.avi') ||
-          url.contains('.mkv') ||
-          (url.contains('firebasestorage.googleapis.com') && 
-           (url.contains('video') || url.contains('.mp4') || url.contains('.webm') || url.contains('.mov')));
+      isVideo=true;
       
       if (isVideo) {
-        _videoController = VideoPlayerController.network(url)
+        _videoController = VideoPlayerController.networkUrl(Uri.parse(signedMediaUrl))
           ..initialize().then((_) {
+             if (!mounted) return;
             setState(() {
               _videoInitialized = true;
             });
           }).catchError((error) {
             print('Video initialization error: $error');
+            if (!mounted) return;
             setState(() {
               _videoInitialized = false;
             });
@@ -237,6 +263,9 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+    return const Center(child: CircularProgressIndicator());
+  }
     final c = widget.caseItem;
     final theme = Theme.of(context);
     return Scaffold(
@@ -298,12 +327,12 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
             const SizedBox(height: 16),
             
             // Multiple Images Gallery
-            if (c.imageUrls.isNotEmpty)
+            if (presignedImgUrls!=null)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Evidence Images (${c.imageUrls.length})',
+                    'Evidence Images (${presignedImgUrls!.length})',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: Color(AppConstants.textColor),
@@ -314,19 +343,19 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                     height: 120,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: c.imageUrls.length,
+                      itemCount: presignedImgUrls!.length,
                       itemBuilder: (context, index) {
                         return Container(
                           margin: EdgeInsets.only(right: 8),
                           child: GestureDetector(
-                            onTap: () => _showImageDialog(c.imageUrls[index]),
+                            onTap: () => _showImageDialog(presignedImgUrls![index]),
                             child: Hero(
                               tag: 'image_${c.id}_$index',
                               child: Card(
                                 margin: EdgeInsets.zero,
                                 clipBehavior: Clip.antiAlias,
                                 child: Image.network(
-                                  c.imageUrls[index],
+                                  presignedImgUrls![index],
                                   height: 120,
                                   width: 120,
                                   fit: BoxFit.cover,
@@ -378,7 +407,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
                   ),
                 ),
               ),
-            if (c.mediaUrl != null && c.mediaUrl!.isNotEmpty) ...[
+            if (mediaUrl != null && mediaUrl!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Card(
                 margin: EdgeInsets.zero,

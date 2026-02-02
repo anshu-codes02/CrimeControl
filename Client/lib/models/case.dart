@@ -1,5 +1,5 @@
 class Case {
-  final int id;
+  final String id;
   final String title;
   final String description;
   final String status;
@@ -13,6 +13,7 @@ class Case {
   final Map<String, dynamic>? postedBy; // User who posted the case
   final String? closedAt;
   final String? deletableAt;
+  final String? mediaType;
 
   Case({
     required this.id,
@@ -29,6 +30,7 @@ class Case {
     this.postedBy,
     this.closedAt,
     this.deletableAt,
+    this.mediaType
   });
 
   factory Case.fromJson(Map<String, dynamic> json) {
@@ -47,6 +49,7 @@ class Case {
       postedBy: json['postedBy'],
       closedAt: json['closedAt'],
       deletableAt: json['deletableAt'],
+      mediaType: json['mediaType']
     );
   }
   
@@ -66,6 +69,7 @@ class Case {
       'postedBy': postedBy,
       'closedAt': closedAt,
       'deletableAt': deletableAt,
+      'mediaType': mediaType
     };
   }
 

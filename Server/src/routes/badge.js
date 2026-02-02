@@ -1,7 +1,7 @@
 const express= require("express");
 const router= express.Router();
 const badgeService=require("../services/badgeService");
-const Badge = require("../models/badge");
+const Badge = require("../models/badge/badge");
 const {auth, isAdmin}=require("../middlewares/auth");
 
 router.post('/create', auth, isAdmin, async(req, res, next)=>{

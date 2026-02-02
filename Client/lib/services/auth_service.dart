@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
@@ -98,22 +99,13 @@ class AuthService {
 
   Future<void> logout() async {
     try {
-      final token = await getToken();
-      if (token != null) {
-        await http.post(
-          Uri.parse('${AppConstants.authUrl}/logout'),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        );
-      }
+     
+      await _clearAuthData();
     } catch (e) {
       // Ignore logout errors
-    } finally {
-      await _clearAuthData();
     }
   }
+
 
   Future<User?> getCurrentUser() async {
     try {
@@ -165,14 +157,15 @@ class AuthService {
     final token = await getToken();
     if (token == null) throw Exception('Not authenticated');
     final response = await http.get(
-      Uri.parse('${AppConstants.baseUrl}/cases'),
+      Uri.parse('${AppConstants.baseUrl}/cases/'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
     );
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+      final List<dynamic> data = json.decode(response.body)['data'];
+      print(data);
       return data.map((json) => Case.fromJson(json)).toList();
     } else {
       throw Exception('Failed to fetch cases: ${response.body}');
@@ -195,7 +188,7 @@ class AuthService {
     }
   }
 
-  Future<List<Comment>> fetchCaseComments(int caseId) async {
+  Future<List<Comment>> fetchCaseComments(String caseId) async {
     final token = await getToken();
     final response = await http.get(
       Uri.parse('${AppConstants.baseUrl}/cases/$caseId/comments'),
@@ -205,7 +198,7 @@ class AuthService {
       },
     );
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+      final List<dynamic> data = json.decode(response.body)['data'];
       print("see the comments" + data.toString());
       return data.map((json) => Comment.fromJson(json)).toList();
     } else {
@@ -215,7 +208,7 @@ class AuthService {
     }
   }
 
-  Future<void> postCaseComment(int caseId, String content) async {
+  Future<void> postCaseComment(String caseId, String content) async {
     final token = await getToken();
     final response = await http.post(
       Uri.parse('${AppConstants.baseUrl}/cases/$caseId/comments'),
@@ -297,83 +290,58 @@ class AuthService {
     return token != null;
   }
 
-  Future<String?> uploadFileToFirebase(File file, String path) async {
-    try {
-      if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
-      }
-      final ref = FirebaseStorage.instance.ref().child(path);
+  Future<Map<String, String>> getPresignUrl({required String filename,
+  required String contentType, required String token}) async{
       
-      // For web platform, we need to use putData instead of putFile
-      if (kIsWeb) {
-        final bytes = await file.readAsBytes();
-        print("firebase "+bytes.toString());
-        await ref.putData(bytes);
-           print("firebase "+ref.getDownloadURL().toString());
-        return await ref.getDownloadURL();
-      } else {
-        // For mobile platforms, use putFile
-        await ref.putFile(file);
-        return await ref.getDownloadURL();
-      }
-    } catch (e, stack) {
-      print('Firebase upload error: $e');
-      print('Stack trace: $stack');
-      return null;
-    }
+      final resp = await http.post(
+    Uri.parse('${AppConstants.baseUrl}/cases/presign-upload'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+    body: jsonEncode({
+      'filename': filename,
+      'ContentType': contentType,
+    }),
+  );
+
+  if (resp.statusCode != 200) {
+    throw Exception('Presign request failed: ${resp.statusCode} ${resp.body}');
+  }
+
+  final json = jsonDecode(resp.body) as Map<String, dynamic>;
+  return {
+    'uploadUrl': json['uploadUrl'] as String,
+    'fileUrl': json['fileUrl'] as String,
+  };
   }
 
   // New method for XFile (works on web)
-  Future<String?> uploadXFileToFirebase(XFile xFile, String path) async {
-    try {
-      print('=== FIREBASE UPLOAD DEBUG ===');
-      print('Starting upload for: ${xFile.name}');
-      print('File size: ${await xFile.length()} bytes');
+  Future<String?> uploadXFileToS3(XFile file, String token) async{
+    final bytes= await file.readAsBytes();
+    final contentType=lookupMimeType(file.path) ?? 'application-octet-stream';
+    final presign=await getPresignUrl(
+      filename: file.name,
+      contentType: contentType,
+      token: token
+    );
 
-      if (Firebase.apps.isEmpty) {
-        print('Initializing Firebase...');
-        await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        );
-      }
+    final uploadUrl = presign['uploadUrl']!;
+    final fileUrl = presign['fileUrl']!;
 
-      final ref = FirebaseStorage.instance.ref().child(path);
-      print('Firebase reference created: $path');
-
-      // Read bytes directly from XFile (works on all platforms)
-      final bytes = await xFile.readAsBytes();
-      print('File bytes read: ${bytes.length} bytes');
-
-      print('Starting Firebase upload with 30s timeout...');
-      final uploadTask = await ref.putData(bytes).timeout(const Duration(seconds: 30), onTimeout: () {
-        print('=== FIREBASE UPLOAD TIMEOUT ===');
-        throw Exception('Firebase upload timed out after 30 seconds');
-      });
-      print('UploadTask result: $uploadTask');
-
-      String? downloadUrl;
-      try {
-        downloadUrl = await ref.getDownloadURL();
-        print('Download URL: $downloadUrl');
-      } catch (e) {
-        print('=== ERROR GETTING DOWNLOAD URL ===');
-        print('Error: $e');
-        downloadUrl = null;
-      }
-
-      if (downloadUrl == null) {
-        print('=== FIREBASE UPLOAD FAILED: Download URL is null ===');
-      } else {
-        print('=== FIREBASE UPLOAD SUCCESS ===');
-      }
-      return downloadUrl;
-    } catch (e, stack) {
-      print('=== FIREBASE UPLOAD ERROR ===');
-      print('Error: $e');
-      print('Stack trace: $stack');
-      print('==============================');
-      return null;
-    }
+    final putResp=await http.put(
+      Uri.parse(uploadUrl),
+      headers:{
+        'Content-Type':contentType
+      },
+      body: bytes
+    );
+    
+     if (putResp.statusCode == 200 || putResp.statusCode == 204) {
+       return fileUrl;
+  } else {
+    throw Exception('S3 upload failed: ${putResp.statusCode}');
+  }
   }
 
   Future<void> postCaseWithMedia({
@@ -393,6 +361,11 @@ class AuthService {
       
       List<String> imageUrls = [];
       String? mediaUrl;
+       print('Getting auth token...');
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
       
       // Upload multiple images
       if (imageFiles != null && imageFiles.isNotEmpty) {
@@ -400,11 +373,10 @@ class AuthService {
         for (int i = 0; i < imageFiles.length; i++) {
           final imageFile = imageFiles[i];
           print('Uploading image ${i + 1}/${imageFiles.length}...');
-          final imageUrl = await uploadXFileToFirebase(
+          final imageUrl = await uploadXFileToS3(
             imageFile,
-            'case_images/${DateTime.now().millisecondsSinceEpoch}_${i}_${imageFile.name}',
-          );
-          print('Firebase image URL ${i + 1}: $imageUrl');
+            token);
+          print('S3 image URL ${i + 1}: $imageUrl');
           if (imageUrl != null) {
             imageUrls.add(imageUrl);
           } else {
@@ -415,11 +387,10 @@ class AuthService {
       
       if (mediaFile != null) {
         print('Starting media upload...');
-        mediaUrl = await uploadXFileToFirebase(
+        mediaUrl = await uploadXFileToS3(
           mediaFile,
-          'case_media/${DateTime.now().millisecondsSinceEpoch}_${mediaFile.name}',
-        );
-        print('Firebase media URL: $mediaUrl');
+          token);
+        print('S3 media URL: $mediaUrl');
       }
       
       print('Creating case data...');
@@ -433,15 +404,10 @@ class AuthService {
       };
       print('Case data: $caseData');
       
-      print('Getting auth token...');
-      final token = await getToken();
-      if (token == null) {
-        throw Exception('No authentication token found');
-      }
-      
+     
       print('Posting case to backend...');
       final response = await http.post(
-        Uri.parse('${AppConstants.casesUrl}'),
+        Uri.parse('${AppConstants.casesUrl}/create'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -465,4 +431,6 @@ class AuthService {
       rethrow;
     }
   }
+
+
 }

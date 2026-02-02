@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/case_service.dart';
 
 class CaseActionWidget extends StatefulWidget {
-  final int caseId;
+  final String caseId;
   final String caseTitle;
   final String caseStatus;
   final VoidCallback? onCaseUpdated;

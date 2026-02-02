@@ -1,9 +1,9 @@
 const bcrypt=require("bcrypt");
 const User=require("../models/user/user");
 const jwt=require("jsonwebtoken");
-const {AppError}=require("../utils/appError");
+const AppError=require("../utils/appError");
 const user = require("../models/user/user");
-require("dotenv").config();
+
 
 exports.createUser=async(user)=>{
 
@@ -30,12 +30,13 @@ exports.createUser=async(user)=>{
 }
 
 exports.authenticateUser=async(data)=>{
-    const user=await User.findOne({email: data.email});
+  console.log(data);
+    const user=await User.findOne({username: data.username}).select('+password');;
     if(!user){
         throw new AppError("User not found", 404);
     }
 
-    const isPasswordValid=await bcrypt.compare(data.password, user.password);
+    const isPasswordValid= await bcrypt.compare(data.password, user.password);
     if(!isPasswordValid){
         throw new AppError("Invalid password", 401);
     }
@@ -68,8 +69,8 @@ exports.incrementSolvedCases=async(user, count)=>{
     return await user.save();
 }
 
-exports.addBadge=async(user, badge)=>{
-    const user=await User.findById(user);
+exports.addBadge=async(userId, badge)=>{
+    const user=await User.findById(userId);
     const set=new Set(user.badges || []);
     set.add(badge);
     user.badges=[...set];

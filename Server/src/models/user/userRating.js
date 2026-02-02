@@ -1,4 +1,5 @@
 const mongoose =require("mongoose");
+const {Schema}=require("mongoose");
 
 
 const UserRatingSchema = new mongoose.Schema(

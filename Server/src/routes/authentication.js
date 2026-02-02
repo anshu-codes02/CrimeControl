@@ -7,6 +7,7 @@ const {auth}=require("../middlewares/auth");
 // User Registration
 router.post("/register", async(req, res) => {
    try{
+    console.log("getting");
         const user=await userService.createUser(req.body);
 
         res.status(200).json({success: true, message: "User registered successfully"});
@@ -19,6 +20,7 @@ router.post("/register", async(req, res) => {
 
 router.post("/login", async(req, res, next)=>{
     try{
+      console.log("log");
         const userData= await userService.authenticateUser(req.body);
         res.status(200).json({success: true, message: "User logged in successfully", token: userData.token, id: userData.user._id,
             role: userData.user.role,

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
 const UserSchema = new mongoose.Schema(
   {
@@ -92,21 +93,21 @@ const UserSchema = new mongoose.Schema(
     // 🔗 Relationships
     connections: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User"
       }
     ],
 
-    caseParticipations: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "CaseParticipation"
-      }
-    ],
+    // caseParticipations: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "CaseParticipation"
+    //   }
+    // ],
 
     receivedRatings: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "UserRating"
       }
     ],

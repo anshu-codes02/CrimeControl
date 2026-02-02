@@ -74,9 +74,6 @@ const BadgeSchema = new Schema(
 
 /*INDEXES */
 
-// Unique badge identifier
-BadgeSchema.index({ name: 1 }, { unique: true });
-
 // Admin / filtering
 BadgeSchema.index({ active: 1 });
 BadgeSchema.index({ type: 1, tier: 1 });

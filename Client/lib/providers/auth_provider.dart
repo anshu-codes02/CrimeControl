@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 
@@ -12,7 +14,12 @@ class AuthProvider with ChangeNotifier {
   User? get user => _user;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get isLoggedIn => _user != null;
+  bool isLoggedIn=false;
+
+  void clearError()
+  {
+    _clearError();
+  }
 
   // Constructor to check auth status on initialization
   AuthProvider() {
@@ -57,6 +64,7 @@ class AuthProvider with ChangeNotifier {
 
     try {
       await _authService.logout();
+      isLoggedIn=false;
       // Clear all user state completely
       _user = null;
       _error = null;
@@ -77,13 +85,16 @@ class AuthProvider with ChangeNotifier {
     _setLoading(true);
     _clearError();
     try {
-      _user = await _authService.getCurrentUser().timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          print('Auth status check timed out');
-          return null;
-        },
-      );
+      
+      final prefs = await SharedPreferences.getInstance();
+      final token= prefs.getString('auth_token');
+      _user = await _authService.getUserFromStorage();
+      if(token!=null)
+      {
+        isLoggedIn=!JwtDecoder.isExpired(token);
+      }else{
+        isLoggedIn=false;
+      }
       notifyListeners();
     } catch (e) {
       print('Error checking auth status: $e');

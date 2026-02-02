@@ -1,3 +1,4 @@
+import 'package:CrimeControl/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants/app_constants.dart';
@@ -19,7 +20,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-
+void initState() {
+    super.initState();
+    // Clear any previous errors when entering login screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.clearError; // Add this method to AuthProvider
+    });
+  }
   @override
   void dispose() {
     _usernameController.dispose();
@@ -248,12 +256,15 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
 
+        if (authProvider.error == null && authProvider.user != null) {
+      await authProvider.checkAuthStatus();
       if (authProvider.isLoggedIn && mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainNavigation()),
         );
       }
+    }
     }
   }
 }

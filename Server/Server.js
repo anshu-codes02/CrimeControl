@@ -1,17 +1,58 @@
 const express= require('express');
 const cors= require('cors');
-require('dotenv').config();
+require("dotenv").config();
 const mongoose= require('mongoose');
+
+const http=require("http");
+const {Server}=require("socket.io");
+
 
 const app= express();
 
+const server=http.createServer(app);
+
+const io= new Server(
+  server,{
+  cors:{origin:"*",
+    credentials:true,
+  }
+}
+);
+
 app.use(cors());
+const setupSocket=require("./src/config/socket");
+setupSocket(io);
+
 app.use(express.json()); 
 
+// ROUTES
+app.use("/api/auth", require("./src/routes/authentication"));
+app.use("/api/badge", require("./src/routes/badge"));
+app.use("/api/cases", require("./src/routes/crimeCase"));
+app.use("/api/dm", require("./src/routes/dm"));
+app.use("/api/hiring/application", require("./src/routes/hiringApplication"));
+app.use("/api/hiring/post", require("./src/routes/hiringPost"));
+app.use("/api/hiring/chat", require("./src/routes/hiringChatMsg"));
+app.use("/api/rating", require("./src/routes/rating"));
+
+// ERROR HANDLER 
+app.use(require("./src/middlewares/errorHandler"));
 
 
-app.use(require("./middleware/errorHandler"));
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
 
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+    server.listen(PORT,'0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  });
 
 
 /*

@@ -1,8 +1,8 @@
-const User=require("../models/userModel");
-const BadgeAward=require("../models/badgeAward");
+const User=require("../models/user/user");
+const BadgeAward=require("../models/badge/badgeAward");
 const userService=require("./userService");
 const AppError = require("../utils/appError");
-const Badge=require("../models/badge");
+const Badge=require("../models/badge/badge");
 
 
 exports.getBadgeByUserId=async(userId)=>{

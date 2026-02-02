@@ -261,7 +261,7 @@ class _CaseManagementDemoScreenState extends State<CaseManagementDemoScreen> {
       return;
     }
 
-    final caseId = int.tryParse(caseIdText);
+    final caseId = caseIdText;
     if (caseId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid case ID')),
@@ -298,7 +298,7 @@ class _CaseManagementDemoScreenState extends State<CaseManagementDemoScreen> {
   }
 
   Future<void> _closeCase() async {
-    final caseId = int.parse(_caseIdController.text);
+    final caseId = _caseIdController.text;
     
     setState(() {
       _isLoading = true;
@@ -352,7 +352,7 @@ class _CaseManagementDemoScreenState extends State<CaseManagementDemoScreen> {
 
     if (confirmed != true) return;
 
-    final caseId = int.parse(_caseIdController.text);
+    final caseId = _caseIdController.text;
     
     setState(() {
       _isLoading = true;

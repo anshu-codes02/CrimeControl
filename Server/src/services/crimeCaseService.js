@@ -1,6 +1,7 @@
 const crimeCase=require("../models/case/crimeCase");
 const CaseComment=require("../models/case/caseComment");
-const crimeCase = require("../models/case/crimeCase");
+const CrimeCase = require("../models/case/crimeCase");
+const AppError= require("../utils/appError");
 
 exports.createCase=async(crimeCase, postedBy)=>{
 
@@ -9,13 +10,13 @@ exports.createCase=async(crimeCase, postedBy)=>{
     crimeCase.postedAt= new Date();
     crimeCase.updatedAt= new Date();
 
-    const savedCase= await crimeCase.create(crimeCase);
+    const savedCase= await CrimeCase.create(crimeCase);
     return savedCase;
 }
 
 exports.updateCase=async(caseId, crimeCase)=>{
     crimeCase.updatedAt= new Date();
-    return crimeCase.findByIdAndUpdate(caseId, crimeCase, {new:true});
+    return CrimeCase.findByIdAndUpdate(caseId, crimeCase, {new:true});
 }
 
 //to add comment
@@ -29,20 +30,20 @@ exports.addComment=async(caseId,userId, comment)=>{
 
 //to close case
 exports.closeCase=async(caseId, userId)=>{
-   const crimeCase= await crimeCase.findById(caseId);
+   const crimeCase= await CrimeCase.findById(caseId);
    if(!crimeCase){
-    throw new Error("Case not found");
+    throw new AppError("Case not found", 404);
    }
    crimeCase.status="CLOSED";
    crimeCase.closedAt=new Date();
    crimeCase.updatedAt=new Date();
-   return crimeCase.save();   
+   return CrimeCase.save();   
 }
 
 exports.deleteCase=async(caseId, userId)=>{
-    const crimeCase= await crimeCase.findById(caseId);
+    const crimeCase= await CrimeCase.findById(caseId);
    if(!crimeCase){
-    throw new Error("Case not found");
+    throw new AppError("Case not found", 404);
    }
     
   crimeCase.findByIdAndDelete(caseId);

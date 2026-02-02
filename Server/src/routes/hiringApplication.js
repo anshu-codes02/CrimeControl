@@ -1,6 +1,6 @@
 const express= require("express");
 const router=express.Router();
-const hiringApplicationService=require("../services/hiringApplicationService");
+const hiringApplicationService=require("../services/hiringApplication");
 const {auth}=require("../middlewares/auth");
 const hiringApplication = require("../models/hiring/hiringApplication");
 
