@@ -8,7 +8,7 @@ _Revolutionizing collaborative crime-solving with real-time chat, secure media, 
 
 ## Introduction 🚀
 
-CrimeControl is a full-stack, modern platform designed for collaborative crime investigation and recruitment. Built with Flutter, Node.js, Socket.IO, Firebase Storage, it empowers investigators, recruiters, and Solvers to work together seamlessly—featuring secure authentication, real-time communication, and robust media handling.
+CrimeControl is a full-stack, modern platform designed for collaborative crime investigation and recruitment. Built with Flutter, Node.js, Socket.IO, AWS S3 Storage, it empowers investigators, recruiters, and Solvers to work together seamlessly—featuring secure authentication, real-time communication, and robust media handling.
 
 
 ## 📸 Screenshots
