@@ -11,6 +11,53 @@ _Revolutionizing collaborative crime-solving with real-time chat, secure media, 
 CrimeControl is a full-stack, modern platform designed for collaborative crime investigation and recruitment. Built with Flutter, Node.js, Socket.IO, Firebase Storage, it empowers investigators, recruiters, and Solvers to work together seamlessly—featuring secure authentication, real-time communication, and robust media handling.
 
 
+## 📸 Screenshots
+
+### Authentication
+<div align="center">
+  <img src="screenshots/signup_screen.jpg" alt="Signup Screen" width="300"/>
+</div>
+<p align="center"><em>Secure JWT-based authentication with elegant UI design</em></p>
+
+### Case Management
+<div align="center">
+  <img src="screenshots/case_list.jpg" alt="Case List" width="300"/>
+  <img src="screenshots/case_details.jpg" alt="Case Details" width="300"/>
+</div>
+<p align="center"><em>Comprehensive case management with detailed views and status tracking</em></p>
+
+### Create Case & Media Upload
+<div align="center">
+  <img src="screenshots/create1.jpg" alt="Create Case" width="300"/>
+  <img src="screenshots/create2.jpg" alt="Multiple Image Upload" width="300"/>
+</div>
+<p align="center"><em>WhatsApp-like multi-image selection with Firebase Storage integration</em></p>
+
+### Chat & Communication
+<div align="center">
+  <img src="screenshots/chat.jpg" alt="Real-time Chat" width="300"/>
+  <img src="screenshots/dm.jpg" alt="Comments Section" width="300"/>
+</div>
+<p align="center"><em>Real-time WebSocket communication for seamless collaboration</em></p>
+
+### Hiring & Recruitment System
+<div align="center">
+  <img src="screenshots/hiring1.jpg" alt="Job Posting" width="300"/>
+  <img src="screenshots/hiring2.jpg" alt="Hiring post only created by Genuine Hirers" width="300"/>
+</div>
+<div align="center" style="margin-top: 10px;">
+  <img src="screenshots/hiring3.jpg" alt="Application Process" width="300"/>
+</div>
+<p align="center"><em>Complete recruitment workflow for crime investigators and applicants</em></p>
+
+### User Profile & Dashboard
+<div align="center">
+  <img src="screenshots/profile.jpg" alt="User Profile" width="300"/>
+  <img src="screenshots/solver_feedback.jpg" alt="Solver Feedback" width="300"/>
+</div>
+<p align="center"><em>Intuitive user interface with comprehensive dashboard and profile management</em></p>
+
+
 
 
 ## Role Based Access 🛡️
