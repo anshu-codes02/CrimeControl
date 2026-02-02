@@ -31,7 +31,7 @@ CrimeControl is a full-stack, modern platform designed for collaborative crime i
   <img src="screenshots/create1.jpg" alt="Create Case" width="300"/>
   <img src="screenshots/create2.jpg" alt="Multiple Image Upload" width="300"/>
 </div>
-<p align="center"><em>WhatsApp-like multi-image selection with Firebase Storage integration</em></p>
+<p align="center"><em>WhatsApp-like multi-image selection with AWS S3 integration</em></p>
 
 ### Chat & Communication
 <div align="center">
