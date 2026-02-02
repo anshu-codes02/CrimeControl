@@ -115,7 +115,7 @@ Recruiter is an individual or entity that can use this platform for hiring solve
 - **Frontend:** Flutter (Dart)
 - **Backend:** Node.js
 - **Database:** MongoDB
-- **Media Storage:** Firebase Storage
+- **Media Storage:** AWS S3
 - **Authentication:** JWT (JSON Web Token)
 - **Real-Time:** Socket.IO
 - **State Management:** Provider (Flutter)
