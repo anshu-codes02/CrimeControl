@@ -1,7 +1,24 @@
-# Ignore Gradle project-specific cache directory
+# ===== Server =====
+Server/node_modules/
+Server/.env
+
+# ===== Flutter / Client =====
+Client/build/
+Client/.dart_tool/
+Client/.packages
+Client/.flutter-plugins
+Client/.flutter-plugins-dependencies
+
+# ===== Build outputs =====
+build/
+
+# ===== Gradle =====
 .gradle
 
-# Ignore Gradle build output directory
-build
+# ===== IDE =====
+.vscode/
+.idea/
 
-.env
+# ===== OS =====
+.DS_Store
+Thumbs.db
