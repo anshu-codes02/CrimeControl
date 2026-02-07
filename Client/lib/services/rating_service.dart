@@ -5,7 +5,7 @@ import '../models/rating.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RatingService {
-  static const String baseUrl = '${AppConstants.baseUrl}/ratings';
+  static const String baseUrl = '${AppConstants.baseUrl}';
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -21,13 +21,13 @@ class RatingService {
   }
 
   /// Rate a user
-  Future<Rating> rateUser({
-    required int raterId,
-    required int ratedUserId,
+  Future<void> rateUser({
+    required String raterId,
+    required String ratedUserId,
     required int rating,
     required String comment,
     required String category,
-    int? caseId,
+    String? caseId,
   }) async {
     try {
       final headers = await _getHeaders();
@@ -37,20 +37,22 @@ class RatingService {
         'rating': rating,
         'comment': comment,
         'category': category,
-        if (caseId != null) 'caseId': caseId,
+        'caseId': caseId,
       });
 
       final response = await http.post(
-        Uri.parse('$baseUrl/rate'),
+        Uri.parse('$baseUrl/rating/create'),
         headers: headers,
         body: body,
       );
 
       if (response.statusCode == 200) {
+         
         final data = json.decode(response.body);
         if (data['success'] == true) {
-          return Rating.fromJson(data['rating']);
+          return;
         } else {
+      
           throw Exception(data['message'] ?? 'Failed to submit rating');
         }
       } else {

@@ -19,17 +19,17 @@ router.post('/create', auth, isAdmin, async(req, res, next)=>{
 });
 
 //get all badges
-router.get('/', auth, isAdmin, async(req, res, next)=>{
+router.get('/', async(req, res, next)=>{
   try{
       const badges= await Badge.find();
-      res.status(200).json({success: true, data: badges});
+      return res.status(200).json({success: true, badges: badges});
   }catch(err){
     next(err);
   }
 });
 
 //get badge by id
-router.post('/:id', auth, isAdmin, async(req, res, next)=>{
+router.post('/get-by/:id', auth, isAdmin, async(req, res, next)=>{
   try{
      const badge= await Badge.findById(req.params.id);
 
@@ -84,7 +84,7 @@ router.get('/user/:userId', auth, async(req, res, next)=>{
 router.post('/award', async(req, res, next)=>{
    try{
       await badgeService.awardBadgeToUser(req.body);
-      res.status(200).json({success: true, message: "Badge awarded successfully"});
+      return res.status(200).json({success: true, message: "Badge awarded successfully"});
    }catch(err){
     next(err);
    }

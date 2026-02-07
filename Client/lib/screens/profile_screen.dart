@@ -8,15 +8,19 @@ import '../models/badge.dart' as BadgeModel;
 import '../services/auth_service.dart';
 import '../services/rating_service.dart';
 import '../services/badge_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/rating_dialog.dart';
 import 'dm_chat_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final int? userId;
-  ProfileScreen({Key? key, userId})
-    : userId = userId is String ? int.tryParse(userId) : userId,
-      super(key: key);
+  final String? userId;
+  final String? caseId;
+  final String? caseTitle;
+  const ProfileScreen({
+    Key? key,
+    this.userId,
+    this.caseId,
+    this.caseTitle,
+  }) : super(key: key);
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -27,9 +31,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser;
   bool _isLoading = true;
   String? _error;
+  String? _caseId;
+  String? _caseTitle;
   bool _canRate = false;
   bool _canAwardBadges = false;
-  List<Map<String, dynamic>> _userBadges = [];
+  List<BadgeModel.Badge> _userBadges = [];
 
   @override
   void initState() {
@@ -38,77 +44,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _fetchUser() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      User? user;
-      if (widget.userId != null) {
-        print(widget.userId!.toString());
-        user = await AuthService().getUserById(widget.userId!);
-        if (user == null &&
-            ModalRoute.of(context)?.settings.arguments is String) {
-          // Fallback: try to fetch by username if provided as argument
-          final username =
-              ModalRoute.of(context)?.settings.arguments as String?;
-          if (username != null && username.isNotEmpty) {
-            user = await AuthService().getUserByUsername(username);
-          }
-        }
-        if (user == null) {
-          setState(() {
-            _user = null;
-            _isLoading = false;
-            _error = 'User not found.';
-          });
-          return;
-        }
-      } else {
-        user = await AuthService().getCurrentUser();
-      }
+  setState(() {
+    _isLoading = true;
+    _error = null;
+  });
 
-      // Get current user for permission checks
-      _currentUser = await AuthService().getCurrentUser();
+  try {
+    User? user;
 
-      // Debug logging for expertise areas
-      if (user != null) {
-        print('=== USER PROFILE DEBUG ===');
-        print('User ID: ${user.id}');
-        print('Username: ${user.username}');
-        print('Role: ${user.role}');
-        print('Expertise Areas: ${user.expertiseAreas}');
-        print('Expertise Areas Length: ${user.expertiseAreas.length}');
-        print('Specializations List: ${user.specializationsList}');
-        print('Expertise (String): ${user.expertise}');
-        print('========================');
-      }
-
-      // Check permissions if viewing another user's profile
-      if (_currentUser != null && user != null && _currentUser!.id != user.id) {
-        // Check if current user can rate this user
-        _canRate = await RatingService().canRate(_currentUser!.id!, user.id!);
-
-        // Check if current user can award badges
-        _canAwardBadges = await BadgeService().canAwardBadges(
-          _currentUser!.id!,
-        );
-
-        // Fetch user's badges for display
-        _userBadges = await BadgeService().getUserBadges(user.id!);
-      }
-
-      setState(() {
-        _user = user;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+    if (widget.userId != null) {
+     
+      user = await AuthService().getUserById(widget.userId!);
+      
+    } else {
+      user = await AuthService().getCurrentUser();
     }
+
+    if (user == null) {
+      setState(() {
+        _user = null;
+        _isLoading = false;
+        _error = 'User not found.';
+      });
+      return;
+    }
+
+    _currentUser = await AuthService().getCurrentUser();
+
+    setState(() {
+      _user = user;
+      _canRate =
+      _currentUser != null &&
+      _currentUser!.id != null &&
+      _user!.id != null &&
+      _currentUser!.id != _user!.id &&
+      (_currentUser!.role == 'ORGANIZATION' ||
+       _currentUser!.role == 'RECRUITER');
+    
+  _canAwardBadges = _canRate; // or add stricter rules if needed
+   _caseId = widget.caseId;
+   _caseTitle=widget.caseTitle;
+   print('Case Title: $_caseTitle');
+   print('Case ID: $_caseId');
+   print("userid: ${widget.userId}");
+   print("currentUserId: ${_currentUser?.id}");
+   _userBadges = BadgeModel.BadgeDefinitions.getAllBadges()
+      .where((badge) => _user!.badges.contains(badge.id))
+      .toList();
+      _isLoading = false;
+    });
+
+  } catch (e) {
+    setState(() {
+      _error = e.toString();
+      _isLoading = false;
+    });
   }
+}
 
   void _showRatingDialog() {
     if (_currentUser == null || _user == null) return;
@@ -119,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           (context) => RatingDialog(
             userName: _user!.displayName,
             userRole: _user!.role,
-            caseTitle: 'Profile Rating',
+            caseTitle: _caseTitle!,
             onSubmit: (rating, comment) async {
               try {
                 await RatingService().rateUser(
@@ -128,6 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   rating: rating.round(),
                   comment: comment,
                   category: 'OVERALL',
+                  caseId: _caseId,
                 );
 
                 if (mounted) {
@@ -428,7 +421,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 runSpacing: 12.0,
                                 children:
                                     _userBadges.map((badgeAward) {
-                                      final badge = badgeAward['badge'];
+                                      final badge = badgeAward;
                                       if (badge == null)
                                         return const SizedBox.shrink();
 
@@ -438,28 +431,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           vertical: 8,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Color(
-                                            int.parse(
-                                              badge['color']?.replaceFirst(
-                                                    '#',
-                                                    '0xFF',
-                                                  ) ??
-                                                  '0xFF4CAF50',
-                                            ),
-                                          ).withOpacity(0.1),
+                                          color: badge.color?.withOpacity(0.1) ?? Colors.grey.withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(
                                             AppConstants.radiusLg,
                                           ),
                                           border: Border.all(
-                                            color: Color(
-                                              int.parse(
-                                                badge['color']?.replaceFirst(
-                                                      '#',
-                                                      '0xFF',
-                                                    ) ??
-                                                    '0xFF4CAF50',
-                                              ),
-                                            ).withOpacity(0.3),
+                                            color: badge.color?.withOpacity(0.3) ?? Colors.grey.withOpacity(0.3),
                                             width: 1,
                                           ),
                                         ),
@@ -469,15 +446,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             Icon(
                                               Icons.military_tech,
                                               size: 20,
-                                              color: Color(
-                                                int.parse(
-                                                  badge['color']?.replaceFirst(
-                                                        '#',
-                                                        '0xFF',
-                                                      ) ??
-                                                      '0xFF4CAF50',
-                                                ),
-                                              ),
+                                              color: badge.color
                                             ),
                                             const SizedBox(width: 8),
                                             Column(
@@ -486,8 +455,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Text(
-                                                  badge['displayName'] ??
-                                                      badge['name'] ??
+                                                  badge.name ??
+                            
                                                       'Badge',
                                                   style: theme
                                                       .textTheme
@@ -495,21 +464,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       ?.copyWith(
                                                         fontWeight:
                                                             FontWeight.w600,
-                                                        color: Color(
-                                                          int.parse(
-                                                            badge['color']
-                                                                    ?.replaceFirst(
-                                                                      '#',
-                                                                      '0xFF',
-                                                                    ) ??
-                                                                '0xFF4CAF50',
-                                                          ),
-                                                        ),
+                                                        color: badge.color ??
+                                                            theme.colorScheme.onSurface,
                                                       ),
                                                 ),
-                                                if (badge['tier'] != null)
+                                                if (badge.tier != null)
                                                   Text(
-                                                    badge['tier']
+                                                    badge.tier
                                                         .toString()
                                                         .toUpperCase(),
                                                     style: theme
@@ -517,17 +478,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                         .bodySmall
                                                         ?.copyWith(
                                                           fontSize: 10,
-                                                          color: Color(
-                                                            int.parse(
-                                                              badge['color']
-                                                                      ?.replaceFirst(
-                                                                        '#',
-                                                                        '0xFF',
-                                                                      ) ??
-                                                                  '0xFF4CAF50',
-                                                            ),
-                                                          ).withOpacity(0.7),
+                                                          color: badge.color.withOpacity(0.7),
                                                         ),
+                      
                                                   ),
                                               ],
                                             ),
@@ -817,7 +770,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => DMChatScreen(peerUser: _user!),
+                  builder: (_) => DMChatScreen(peerUser: _user!, caseId: _caseId, caseTitle: _caseTitle),
                 ),
               );
             },
@@ -881,7 +834,7 @@ class _SimpleBadgeDialogState extends State<_SimpleBadgeDialog> {
       });
 
       print('Loading badges...');
-      final badges = await BadgeService().getAvailableBadges();
+      final badges = BadgeModel.BadgeDefinitions.getAllBadges();
       print('Loaded ${badges.length} badges');
 
       setState(() {
@@ -913,9 +866,7 @@ class _SimpleBadgeDialogState extends State<_SimpleBadgeDialog> {
     });
 
     try {
-      print(
-        'Awarding badge: ${_selectedBadge!.name} (ID: ${_selectedBadge!.id})',
-      );
+      
       await BadgeService().awardBadge(
         awarderId: widget.awarder.id!,
         userId: widget.userToAward.id!,

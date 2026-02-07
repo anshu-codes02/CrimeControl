@@ -1,8 +1,9 @@
 const User=require("../models/user/user");
 const DirectMessage=require("../models/user/directChatMsg");
 const AppError=require("../utils/appError");
+const mongoose=require("mongoose");
 
-exports.sendMessage = async (senderId, receiverId, content) => {
+exports.sendMessage = async (senderId, receiverId, caseId, content) => {
   if (!content || !content.trim()) {
     throw new AppError("Message content is required", 400);
   }
@@ -16,30 +17,29 @@ exports.sendMessage = async (senderId, receiverId, content) => {
     throw new AppError("Invalid sender or receiver", 400);
   }
 
-  return DirectMessage.create({
+  const val= await DirectMessage.create({
     sender: senderId,
     receiver: receiverId,
-    content
+    content,
+    caseId
   });
+  console.log("Message created:", val);
+  return val;
 };
 
-exports.getChat=async (user1id, user2id)=>{
-   const [user1, user2] = await Promise.all([
-    User.findById(user1id),
-    User.findById(user2id)
-  ]);
+exports.getChat = async (user1id, user2id, caseId) => {
+  const u1 = new mongoose.Types.ObjectId(user1id);
+  const u2 = new mongoose.Types.ObjectId(user2id);
+  const cId = new mongoose.Types.ObjectId(caseId);
 
-  if (!user1 || !user2) {
-    throw new AppError("Invalid sender or receiver", 400);
-  }
-
-   return await DirectMessage.find({
+  return await DirectMessage.find({
+    caseId: cId,
     $or: [
-      { sender: user1id, receiver: user2id },
-      { sender: user2id, receiver: user1id }
+      { sender: u1, receiver: u2 },
+      { sender: u2, receiver: u1 }
     ]
   })
-    .sort({ createdAt: 1 })
+    .sort({ sentAt: 1 })
     .populate("sender", "username")
     .populate("receiver", "username");
 };

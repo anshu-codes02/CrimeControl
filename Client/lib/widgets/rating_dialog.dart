@@ -189,7 +189,7 @@ class _RatingDialogState extends State<RatingDialog> {
                 const SizedBox(width: AppConstants.spacingMd),
                 Expanded(
                   child: CustomButton(
-                    text: 'Submit Rating',
+                    text: 'Submit',
                     onPressed: _rating > 0 && !_isSubmitting
                         ? () async {
                             setState(() => _isSubmitting = true);

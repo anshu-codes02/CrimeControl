@@ -4,7 +4,7 @@ import '../constants/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CaseService {
-  static const String baseUrl = '${AppConstants.baseUrl}/api/cases';
+  static const String baseUrl = '${AppConstants.baseUrl}/cases';
 
   /// Get headers with authentication token
   Future<Map<String, String>> _getHeaders() async {
@@ -65,7 +65,7 @@ class CaseService {
     try {
       final headers = await _getHeaders();
       final response = await http.delete(
-        Uri.parse('$baseUrl/$caseId'),
+        Uri.parse('$baseUrl/$caseId/delete'),
         headers: headers,
       );
 
@@ -102,7 +102,7 @@ class CaseService {
       print('=============================');
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        return json.decode(response.body)['data'];
       } else {
         final errorResponse = json.decode(response.body);
         throw Exception(errorResponse['error'] ?? 'Failed to check deletion status');

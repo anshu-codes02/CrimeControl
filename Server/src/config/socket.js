@@ -6,13 +6,13 @@ module.exports=(io)=>{
         try{
              const token = socket.handshake.auth?.token;
              if (!token) {
-        throw new AppError("Authentication token missing", 401);
+        return next(new AppError("Authentication token missing", 401));
       }
              const decoded = jwt.verify(token, process.env.JWT_SECRET);
              socket.request.user = decoded;
 
           const user=socket.request.user;
-          if(!user) throw new AppError("user not found", 400);
+          if(!user) return next(new AppError("user not found", 400));
           socket.userId=user.id;
           next();
         }catch(err){

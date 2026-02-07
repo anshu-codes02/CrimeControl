@@ -10,7 +10,7 @@ class Case {
   final List<String> tags;
   final String? caseType;
   final String? difficulty;
-  final Map<String, dynamic>? postedBy; // User who posted the case
+  final String? postedBy; // User who posted the case
   final String? closedAt;
   final String? deletableAt;
   final String? mediaType;
@@ -46,7 +46,10 @@ class Case {
       tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
       caseType: json['caseType'],
       difficulty: json['difficulty'],
-      postedBy: json['postedBy'],
+       postedBy: json['postedBy'] is Map
+        ? json['postedBy']['_id'] as String
+        : json['postedBy'] as String,
+
       closedAt: json['closedAt'],
       deletableAt: json['deletableAt'],
       mediaType: json['mediaType']
@@ -77,10 +80,10 @@ class Case {
   bool get isClosed => status.toUpperCase() == 'CLOSED';
 
   /// Get the poster's user ID if available
-  int? get posterId => postedBy?['id'];
+  //int? get posterId => postedBy?['id'];
 
   /// Get the poster's username if available
-  String? get posterUsername => postedBy?['username'];
+  //String? get posterUsername => postedBy?['username'];
 
   /// Check if the case can potentially be deleted (closed status)
   bool get canPotentiallyBeDeleted => isClosed && deletableAt != null;

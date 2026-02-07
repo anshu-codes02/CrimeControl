@@ -3,7 +3,7 @@ import '../models/hiring_post.dart';
 import '../services/hiring_service.dart';
 
 class CreateHiringPostScreen extends StatefulWidget {
-  final int recruiterId;
+  final String recruiterId;
   const CreateHiringPostScreen({required this.recruiterId, Key? key})
     : super(key: key);
 

@@ -1,29 +1,29 @@
 const jwt=require('jsonwebtoken');
 
-exports.auth=(req,res,next)=>{
-    try{
-    const token=req.headers.authorization.split( " ")[1];
+exports.auth = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
 
-    //check for token
-    if(!token)
-    {
-        return res.status(401).json({success: false, message: "No token, authorization denied"});
+    if (!authHeader) {
+      return res.status(401).json({
+        success: false,
+        message: "No token, authorization denied",
+      });
     }
 
-    //verify token
-    try{
-        const decode=jwt.verify(token, process.env.JWT_SECRET);
-        req.user=decode;
-    }catch(err)
-    {
-        res.status(401).json({success: false, message: "Token is not valid"});
-    }
-    next();
-}catch(err){
-    console.error(err.message);
-    res.status(500).json({success: false, message: "authentication failed"});
-}
-}
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next(); // ✅ only reached if token is valid
+  } catch (err) {
+    return res.status(401).json({
+      success: false,
+      message: "Token is not valid",
+    });
+  }
+};
+
 
 
 exports.isOrganization=(req, res, next)=>{

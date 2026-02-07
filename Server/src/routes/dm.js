@@ -4,12 +4,15 @@ const dmService=require("../services/dmService");
 const {auth}=require("../middlewares/auth");
 
 
-router.get("/:userId", auth, async(req,res,next)=>{
+router.get("/chat/:receiverId/:caseId", auth, async(req,res,next)=>{
     try{
        const user1=req.user.id;
-       const user2=req.params.userId;
+       const user2=req.params.receiverId;
+       const caseId=req.params.caseId;
+       console.log("Fetching chat between users:", user1, user2, "for case:", caseId);
+       const chat=await dmService.getChat(user1, user2, caseId);
+       console.log("Fetched chat messages:", chat);
 
-       const chat=await dmService.getChat(user1, user2);
        return res.status(200).json({success: true, data: chat});
 
     }catch(err){

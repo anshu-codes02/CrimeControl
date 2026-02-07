@@ -2,6 +2,7 @@ const express=require("express");
 const router=express.Router();
 const userService=require("../services/userService");
 const {auth}=require("../middlewares/auth");
+const User=require("../models/user/user");
 
 
 // User Registration
@@ -22,6 +23,7 @@ router.post("/login", async(req, res, next)=>{
     try{
       console.log("log");
         const userData= await userService.authenticateUser(req.body);
+        
         res.status(200).json({success: true, message: "User logged in successfully", token: userData.token, id: userData.user._id,
             role: userData.user.role,
             username: userData.user.username,
@@ -43,6 +45,19 @@ router.get("/me", auth, async (req, res, next) => {
   if (!user) return res.status(404).end();
 
   res.json(user);
+}catch(err){
+  next(err);
+} 
+});
+
+router.get("/:id", auth, async (req, res, next) => {
+    try{
+  const user = await User.findById(req.params.id);
+  console.log("Fetched user:", user);
+
+  if (!user) return res.status(404).end();
+
+  res.status(200).json({'data': user});
 }catch(err){
   next(err);
 } 

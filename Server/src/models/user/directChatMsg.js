@@ -20,7 +20,11 @@ const DirectMessageSchema = new Schema(
       required: true,
       trim: true
     },
-
+    caseId:{
+      type: Schema.Types.ObjectId,
+      ref: "CrimeCase",
+      required: true
+    },
     sentAt: {
       type: Date,
       default: Date.now,

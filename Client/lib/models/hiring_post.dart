@@ -1,6 +1,6 @@
 class HiringPost {
   final int? id;
-  final int recruiterId;
+  final String recruiterId;
   final double hourlyRate;
   final String caseType;
   final String overview;

@@ -15,23 +15,29 @@ exports.getBadgeByUserId=async(userId)=>{
     return badges;
 }
 
-exports.awardBadgeToUser=async(data)=>{
-  const {user, badge, reason, crimeCase, awardedBy}=data;
+exports.awardBadgeToUser = async (data) => {
+  const {
+    userId,
+    badgeId,
+    reason,
+    awarderId,
+    caseId,
+  } = data;
 
-  const award= await BadgeAward.create({
-    user: user,
-    badge: badge,
+  
+  const award = await BadgeAward.create({
+    user: userId,
+    badge: badgeId,
     reason: reason,
-    crimeCase: crimeCase,
-    awardedBy: awardedBy,
-    awardedAt: new Date()
+    awardedBy: awarderId,
+    crimeCase: caseId,
+    awardedAt: new Date(),
   });
 
-    award=await award.save();
-    await userService.addBadge(user, badge.name);
-    return award;
-}
+  await userService.addBadge(userId, badgeId);
 
+  return award;
+};
 exports.canAwardBadge=async(data, awarderId)=>{
   
     const user=await User.findById(awarderId);

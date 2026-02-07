@@ -26,7 +26,7 @@ class _HiringMainScreenState extends State<HiringMainScreen> {
     });
   }
 
-  void _openCreatePost(int recruiterId) async {
+  void _openCreatePost(String recruiterId) async {
     final created = await Navigator.push(
       context,
       MaterialPageRoute(

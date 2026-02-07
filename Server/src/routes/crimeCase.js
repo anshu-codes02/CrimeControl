@@ -18,6 +18,7 @@ router.get('/', async (req, res) => {
             description: c.description,
             status: c.status || null,
             postedAt: c.postedAt || null,
+            postedBy: c.postedBy || null,
             imageUrl: c.imageUrl,
             mediaUrl: c.mediaUrl,
             tags: c.tags || [],
@@ -40,6 +41,7 @@ router.get('/:id', async (req, res) => {
         if (!crimeCase) {
             return res.status(404).json({ success: false, message: "Case not found" });
         }
+        console.log("Fetched case", crimeCase);
         res.status(200).json({ success: true, data: crimeCase });
     } catch (err) {
         res.status(500).json({ success: false, message: "Failed to fetch case" });
@@ -129,29 +131,33 @@ router.post('/presign-upload', auth, isOrganization, async(req, res, next)=>{
 //get all comments for a case
 router.get('/:id/comments', async (req, res) => {
     try {
-        const crimeCase = await CrimeCase.findById(req.params.id).populate('comments.user', 'username');;
+        const crimeCase = await CrimeCase.findById(req.params.id).populate({path: 'comments', populate:{path: 'user', select: 'username'}}).sort({ postedAt: -1 });
+        
         if (!crimeCase) {
             return res.status(404).json({ success: false, message: "Case not found" });
         }
+        
         const comments = crimeCase.comments.map((c) => ({
       id: c._id.toString(),
       userId: c.user?._id?.toString() || null,
       author: c.user?.username || "Unknown",
       content: c.content,
-      createdAt: c.createdAt ? c.createdAt.toISOString() : null,
+      createdAt: c.createdAt || null,
     }));
+    
 
-        res.status(200).json({ success: true, data: comments });
+        return res.status(200).json({ success: true, data: comments });
     } catch (err) {
-        res.status(500).json({ success: false, message: "Failed to fetch case comments" });
+        return res.status(500).json({ success: false, message: "Failed to fetch case comments" });
     }
 });
 
 //add a comment to a case
-router.post('/:id/comments', auth, async(req, res)=>{
+router.post('/:id/comment', auth, async(req, res)=>{
   try{
      const {content}=req.body;
-
+     console.log("posting comment");
+  
      if(!content.trim())
      {
         return res.status(400).json({ success: false, message: "Comment content cannot be empty" });
@@ -163,7 +169,7 @@ router.post('/:id/comments', auth, async(req, res)=>{
             return res.status(404).json({ success: false, message: "Case not found" });
         }
 
-        await crimeCaseService.addCommentToCase(req.params.id, req.user.id, content);
+        await crimeCaseService.addComment(req.params.id, req.user.id, content);
         return res.status(200).json({ success: true, message: "Comment added successfully" });
   }catch(err){
     res.status(500).json({ success: false, message: "Failed to add comment to case" });
@@ -174,28 +180,43 @@ router.post('/:id/comments', auth, async(req, res)=>{
 //close case
 router.put('/:id/close', auth, isOrganization, async(req, res)=>{
   try{
+    console.log("Request to close case", req.params.id, "by user", req.user.id);
      const closedCase=await crimeCaseService.closeCase(req.params.id, req.user.id);
 
-        res.status(200).json({ success: true, message: "Case closed successfully",
+        return res.status(200).json({ success: true, message: "Case closed successfully",
             case: closedCase
          });
   }catch(err)
   {
-    res.status(500).json({ success: false, message: "Failed to close case" });
+    return res.status(500).json({ success: false, message: "Failed to close case" });
   }   
 });
 
 //delete case
-router.delete('/:id', auth, isOrganization, async(req, res)=>{
+router.delete('/:id/delete', auth, isOrganization, async(req, res)=>{
   try{
      await crimeCaseService.deleteCase(req.params.id, req.user.id);
 
-        res.status(200).json({ success: true, message: "Case deleted successfully" });
+        return res.status(200).json({ success: true, message: "Case deleted successfully" });
   }catch(err)
   {
-    res.status(500).json({ success: false, message: "Failed to delete case" });
+    return res.status(500).json({ success: false, message: "Failed to delete case" });
   }
 });   
+
+router.get("/:id/can-delete", async (req, res) => {
+  try {
+    const canDelete = await crimeCaseService.canDeleteCase(
+      req.params.id
+    );
+
+    res.json({
+      data: canDelete
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
 module.exports = router;
 

@@ -5,14 +5,12 @@ import 'dart:convert';
 import '../models/user.dart';
 import '../constants/app_constants.dart';
 import '../providers/auth_provider.dart';
-import 'package:stomp_dart_client/stomp.dart';
-import 'package:stomp_dart_client/stomp_config.dart';
-import 'package:stomp_dart_client/stomp_frame.dart';
 import '../services/auth_service.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class DMChatScreen extends StatefulWidget {
   final User peerUser;
-  final int? caseId;
+  final String? caseId;
   final String? caseTitle;
   final VoidCallback? onMessageSent;
   const DMChatScreen({
@@ -30,9 +28,9 @@ class DMChatScreen extends StatefulWidget {
 class _DMChatScreenState extends State<DMChatScreen> {
   List<dynamic> messages = [];
   final TextEditingController _controller = TextEditingController();
-  StompClient? stompClient;
   User? currentUser;
-  bool isConnected = false;
+  IO.Socket? socket;
+bool isConnected = false;
 
   @override
   void initState() {
@@ -41,65 +39,74 @@ class _DMChatScreenState extends State<DMChatScreen> {
   }
 
   Future<void> initChat() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    currentUser = authProvider.user;
+    currentUser = await AuthService().getCurrentUser();
     await fetchChatHistory();
-    await connectWebSocketWithAuth();
+    await connectSocketWithAuth();
   }
 
   Future<void> fetchChatHistory() async {
     final token = await AuthService().getToken();
+    final uri = '${AppConstants.baseUrl}/dm/chat/${widget.peerUser.id}/${widget.caseId}';
     final response = await http.get(
       Uri.parse(
-        '${AppConstants.baseUrl}/dm/chat/${widget.peerUser.id}?caseId=${widget.caseId ?? ''}',
+        uri,
       ),
       headers: {'Authorization': 'Bearer $token'},
     );
+    print("=== CHAT HISTORY DEBUG ===");
+    print('Requesting chat history with peerUserId: ${widget.peerUser.id} and caseId: ${widget.caseId}');
+    print("currentUserId: ${currentUser?.id}");
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${json.decode(response.body)}');
+    print("==========================");
     if (response.statusCode == 200) {
-      setState(() {
-        messages = json.decode(response.body);
-      });
+      final decoded = json.decode(response.body);
+      if (!mounted) return;
+
+  setState(() {
+    messages = decoded['data'] ?? [];
+  });
     }
   }
 
-  Future<void> connectWebSocketWithAuth() async {
+  Future<void> connectSocketWithAuth() async {
     final token = await AuthService().getToken();
-    stompClient = StompClient(
-      config: StompConfig.SockJS(
-        url: '${AppConstants.baseUrl.replaceFirst('/api', '')}/ws',
-        onConnect: onConnect,
-        onWebSocketError: (dynamic error) => print(error),
-        stompConnectHeaders: {'Authorization': 'Bearer $token'},
-        webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
-      ),
-    );
-    stompClient!.activate();
-  }
+    socket = IO.io(
+    AppConstants.baseUrl.replaceFirst('/api', ''),
+    IO.OptionBuilder()
+        .setAuth({'token': token})
+        .enableAutoConnect()
+        .build(),
+  );
 
-  void onConnect(StompFrame frame) {
+  socket!.onConnect((_) {
+     if (!mounted) return;
     setState(() {
       isConnected = true;
     });
-    stompClient!.subscribe(
-      destination: '/topic/dm.${currentUser!.id}',
-      callback: (frame) {
-        if (frame.body != null) {
-          final msg = json.decode(frame.body!);
-          if ((msg['sender']['id'] == widget.peerUser.id &&
-                  msg['receiver']['id'] == currentUser!.id) ||
-              (msg['sender']['id'] == currentUser!.id &&
-                  msg['receiver']['id'] == widget.peerUser.id)) {
-            setState(() {
-              messages.add(msg);
-            });
-          }
-        }
-      },
-    );
-  }
+  });
+
+  socket!.onDisconnect((_) {
+     if (!mounted) return;
+    setState(() {
+      isConnected = false;
+    });
+  });
+
+  socket!.on('dm:new',(data){
+     if (!mounted) return;
+    if(data['senderId']==widget.peerUser.id && data['receiverId']==currentUser!.id ||
+       data['senderId']==currentUser!.id && data['receiverId']==widget.peerUser.id){
+         setState(() {
+           messages.add(data);
+         });
+       }
+  });
+}
+
 
   void sendMessage() {
-    if (_controller.text.trim().isEmpty || stompClient == null || !isConnected)
+    if (_controller.text.trim().isEmpty || socket == null || !isConnected)
       return;
     final msg = {
       'senderId': currentUser!.id,
@@ -107,26 +114,29 @@ class _DMChatScreenState extends State<DMChatScreen> {
       'content': _controller.text.trim(),
       'caseId': widget.caseId,
     };
-    stompClient!.send(destination: '/app/dm.send', body: json.encode(msg));
+    socket!.emit('dm:send', msg);
+
     setState(() {
       messages.add({
-        'sender': {'id': currentUser!.id},
-        'receiver': {'id': widget.peerUser.id},
+        'sender':{ '_id': currentUser!.id, 'username': currentUser!.username},
+        'receiverId': {'_id': widget.peerUser.id, 'username': widget.peerUser.username},
         'content': _controller.text.trim(),
         'caseId': widget.caseId,
       });
     });
     _controller.clear();
-    if (widget.onMessageSent != null) {
-      widget.onMessageSent!();
-    }
+    widget.onMessageSent?.call();
   }
 
   @override
   void dispose() {
-    stompClient?.deactivate();
-    _controller.dispose();
-    super.dispose();
+    socket?.off('dm:new');
+  socket?.off('connect');
+  socket?.off('disconnect');
+  socket?.disconnect();
+  socket?.dispose();
+  _controller.dispose();
+  super.dispose();
   }
 
   @override
@@ -154,7 +164,7 @@ class _DMChatScreenState extends State<DMChatScreen> {
                 final msg = messages[index];
                 final isMe =
                     msg['sender'] != null &&
-                    msg['sender']['id'] == currentUser?.id;
+                    msg['sender']['_id'] == currentUser?.id;
                 return Align(
                   alignment:
                       isMe ? Alignment.centerRight : Alignment.centerLeft,

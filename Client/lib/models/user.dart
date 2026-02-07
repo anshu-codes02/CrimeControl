@@ -1,5 +1,5 @@
 class User {
-  final int? id;
+  final String? id;
   final String? username;
   final String? email;
   final String? firstName;
@@ -13,7 +13,7 @@ class User {
   final List<String> expertiseAreas;
   final bool organizationVerified;
   final String? organizationType;
-  final List<String> badges;
+  final List<int> badges;
   final double averageRating;
   final int totalRatings;
   final int solvedCasesCount;
@@ -62,16 +62,8 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
-    int? parsedId;
-    if (json['id'] != null) {
-      if (json['id'] is int) {
-        parsedId = json['id'];
-      } else if (json['id'] is String) {
-        parsedId = int.tryParse(json['id']);
-      }
-    }
     return User(
-      id: parsedId,
+      id: (json['id'] ?? json['_id'])?.toString(),
       username: json['username'],
       email: json['email'],
       firstName: json['firstName'],
@@ -85,7 +77,7 @@ class User {
       expertiseAreas: List<String>.from(json['expertiseAreas'] ?? []),
       organizationVerified: json['organizationVerified'] ?? false,
       organizationType: json['organizationType'],
-      badges: List<String>.from(json['badges'] ?? []),
+      badges: List<int>.from(json['badges'] ?? []),
       averageRating: (json['averageRating'] ?? 0.0).toDouble(),
       totalRatings: json['totalRatings'] ?? 0,
       solvedCasesCount: json['solvedCasesCount'] ?? 0,

@@ -6,7 +6,7 @@ import '../models/badge_with_multiplier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BadgeService {
-  static const String baseUrl = '${AppConstants.baseUrl}/badges';
+  static const String baseUrl = '${AppConstants.baseUrl}/badge';
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -27,8 +27,8 @@ class BadgeService {
 
   /// Award a badge to a user (for RECRUITERS and ORGANIZATIONS)
   Future<Map<String, dynamic>> awardBadge({
-    required int awarderId,
-    required int userId,
+    required String awarderId,
+    required String userId,
     required int badgeId,
     required String reason,
     int? caseId,
@@ -43,22 +43,13 @@ class BadgeService {
         if (caseId != null) 'caseId': caseId,
       });
 
-      print('=== BADGE AWARD DEBUG ===');
-      print('URL: $baseUrl/award');
-      print('Headers: $headers');
-      print('Body: $body');
-      print('========================');
+     
 
       final response = await http.post(
         Uri.parse('$baseUrl/award'),
         headers: headers,
         body: body,
       );
-
-      print('=== RESPONSE DEBUG ===');
-      print('Status: ${response.statusCode}');
-      print('Body: ${response.body}');
-      print('=====================');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -81,7 +72,7 @@ class BadgeService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
-        Uri.parse('$baseUrl/available'),
+        Uri.parse('$baseUrl/'),
         headers: headers,
       );
 

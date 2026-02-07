@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String baseUrl = 'http://10.127.0.184:5000/api';
+  static const String baseUrl = 'http://localhost:5000/api';
   static const String authUrl = '$baseUrl/auth';
   static const String casesUrl = '$baseUrl/cases';
   static const String usersUrl = '$baseUrl/auth';

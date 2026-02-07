@@ -7,7 +7,8 @@ const {auth}=require("../middlewares/auth");
 //rate
 router.post('/create', auth, async(req, res, next)=>{
   try{
-       await ratingService.createRating(req.body);
+    console.log("Rating request body:", req.body);
+       await ratingService.createRating(req.body, req.user.id);
          res.status(200).json({success: true, message: "Rated successfully"});
   }catch(err){
     next(err);

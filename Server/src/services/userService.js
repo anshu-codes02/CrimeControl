@@ -69,10 +69,10 @@ exports.incrementSolvedCases=async(user, count)=>{
     return await user.save();
 }
 
-exports.addBadge=async(userId, badge)=>{
+exports.addBadge=async(userId, badgeId)=>{
     const user=await User.findById(userId);
     const set=new Set(user.badges || []);
-    set.add(badge);
+    set.add(badgeId);
     user.badges=[...set];
     user.updatedAt=new Date();
     return await user.save();

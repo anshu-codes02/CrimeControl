@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema(
 
     interests: [String],
     expertiseAreas: [String],
-    badges: [String],
+    badges: [Number],
     specializationsList: [String],
     
     organizationVerified: {

@@ -1,12 +1,12 @@
 const AppError = require("../utils/appError");
 const Rating = require("../models/user/userRating");
 const User = require("../models/user/user");
+const mongoose = require("mongoose");
 
-exports.createRating = async (data) => {
+exports.createRating = async (data, raterId) => {
 
-
-
-    if (!data.ratedUserId || !data.user?.id || !data.rating) {
+   console.log("Creating rating with data:", data);
+    if (!data.ratedUserId || !raterId || !data.rating) {
         throw new AppError("Missing required fields", 400);
     }
 
@@ -16,7 +16,7 @@ exports.createRating = async (data) => {
         throw new AppError("Rated user not found", 404);
     }
 
-    const oldRating = await Rating.findOneAndDelete({ ratedUser: data.ratedUserId, rater: data.user.id });
+    const oldRating = await Rating.findOneAndDelete({ ratedUser: data.ratedUserId, rater: raterId });
 
     if (oldRating) {
         user.receivedRatings.pull(oldRating._id);
@@ -24,7 +24,7 @@ exports.createRating = async (data) => {
 
     const rating = await Rating.create({
         ratedUser: data.ratedUserId,
-        rater: data.user.id,
+        rater: raterId,
         rating: data.rating,
         comment: data.comment,
         type: data.category,
@@ -36,7 +36,7 @@ exports.createRating = async (data) => {
     const stats = await Rating.aggregate([
         {
             $match: {
-                ratedUser: data.ratedUserId
+                ratedUser: new mongoose.Types.ObjectId(data.ratedUserId),
             },
         },
         {
@@ -54,6 +54,10 @@ exports.createRating = async (data) => {
     user.averageRating = stats[0]?.average || 0;
     user.totalRatings = stats[0]?.count || 0;
     user.receivedRatings.push(rating._id);
+    console.log("Updated user rating stats:", {
+        averageRating: user.averageRating,
+        totalRatings: user.totalRatings
+    });
     await user.save();
 
     return rating;
@@ -109,7 +113,7 @@ exports.deleteRating = async (userId, ratingId) => {
         if (!user) throw new AppError("Rated user not found", 404);
 
         const stats = await Rating.aggregate([
-            { $match: { ratedUser: user._id } },
+            { $match: { ratedUser:  new mongoose.Types.ObjectId(user._id), } },
             {
                 $group: {
                     _id: "$ratedUser",

@@ -4,8 +4,7 @@ const { Schema } = mongoose;
 const BadgeAwardSchema = new Schema(
   {
     badge: {
-      type: Schema.Types.ObjectId,
-      ref: "Badge",
+      type: Number,
       required: true
     },
 

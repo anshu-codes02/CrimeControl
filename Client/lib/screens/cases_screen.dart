@@ -100,12 +100,14 @@ class _CasesScreenState extends State<CasesScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Padding(
                   padding: const EdgeInsets.all(AppConstants.spacingMd),
-                  child: Column(
-                    children: List.generate(
-                      5,
-                      (index) => Padding(
-                        padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
-                        child: ShimmerCard(height: 120),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: List.generate(
+                        5,
+                        (index) => Padding(
+                          padding: const EdgeInsets.only(bottom: AppConstants.spacingMd),
+                          child: ShimmerCard(height: 120),
+                        ),
                       ),
                     ),
                   ),

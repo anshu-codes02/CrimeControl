@@ -14,7 +14,7 @@ const CaseCommentSchema = new Schema(
       ref: "CrimeCase",
       required: true
     },
-
+  
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",

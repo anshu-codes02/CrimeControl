@@ -58,20 +58,24 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Print all case details when the screen is opened
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
     final c = widget.caseItem;
     print(
-      'Case details: id= [33m${c.id} [0m, title=${c.title}, description=${c.description}, status=${c.status}, postedAt=${c.postedAt}, imageUrl=${c.imageUrl}, mediaUrl=${c.mediaUrl}',
+      'Case details: id= [33m${c.id} [0m, title=${c.title}, description=${c.description}, status=${c.status}, postedAt=${c.postedAt}, postedBy=${c.postedBy}, imageUrl=${c.imageUrl}, mediaUrl=${c.mediaUrl}',
     );
     print('darpa '+c.imageUrl.toString());
     print('DEBUG: imageUrls = ${c.imageUrls}');
     print('DEBUG: imageUrls length = ${c.imageUrls.length}');
     print('DEBUG: imageUrls isEmpty = ${c.imageUrls.isEmpty}');
-    
-     loadSignedUrls();
-    _commentsFuture = _authService.fetchCaseComments(widget.caseItem.id);
-    
-    _loadCurrentUser();
+
+    await loadSignedUrls();
+    setState(() {
+      _commentsFuture = _authService.fetchCaseComments(widget.caseItem.id);
+    });
+    await  _loadCurrentUser();
     if (widget.caseItem.isClosed) {
       _checkDeletionStatus();
     }
@@ -245,13 +249,21 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   }
 
   bool _canUserManageCase() {
-    if (_currentUser == null) return false;
+    if (_currentUser == null) 
+    {
+      print("no current user loaded");
+      return false;
+
+    }
     
     // Check if current user is the poster or an admin
     final currentUserId = _currentUser!.id;
     final isAdmin = _currentUser!.role == 'ADMIN';
-    final isPoster = widget.caseItem.posterId == currentUserId;
-    
+    final isPoster = widget.caseItem.postedBy == currentUserId;
+    print("isAdmin: $isAdmin, isPoster: $isPoster");
+    print("postedBy (case): ${widget.caseItem.postedBy}");
+print("currentUserId: $currentUserId");
+
     return isAdmin || isPoster;
   }
 
@@ -263,7 +275,7 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (isLoading || _currentUser == null) {
     return const Center(child: CircularProgressIndicator());
   }
     final c = widget.caseItem;
@@ -636,13 +648,14 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
   }
 
   Widget _buildCommentItem(Comment comment) {
+    print('Comment details: id=${comment.id}, userId=${comment.userId}, author=${comment.author}, content=${comment.content}, createdAt=${comment.createdAt}');
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ProfileScreen(userId: comment.userId),
+            builder: (_) => ProfileScreen(userId: comment.userId,caseId: widget.caseItem.id,caseTitle: widget.caseItem.title,),
           ),
         );
       },
@@ -658,8 +671,25 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
             comment.author.isNotEmpty ? comment.author : 'Unknown',
             style: theme.textTheme.labelLarge,
           ),
-          subtitle: Text(comment.content, style: theme.textTheme.bodyMedium),
-        ),
+          subtitle: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: 4),
+      Text(comment.content, style: theme.textTheme.bodyMedium),
+      const SizedBox(height: 4),
+      Row(
+        children: [
+          Spacer(),
+          Text(
+            formatReadableDate(comment.createdAt),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ), ),
       ),
     );
   }
@@ -839,4 +869,13 @@ class _CaseDetailScreenState extends State<CaseDetailScreen> {
       ),
     );
   }
+  String formatReadableDate(DateTime? date) {
+  if (date == null) return '';
+  const months = [
+    'Jan','Feb','Mar','Apr','May','Jun',
+    'Jul','Aug','Sep','Oct','Nov','Dec'
+  ];
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
+}
+
 }

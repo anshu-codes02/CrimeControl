@@ -2,16 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:image_picker/image_picker.dart';
 import '../constants/app_constants.dart';
 import '../models/user.dart';
 import '../models/case.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
+
 import '../models/comment.dart';
-import 'package:firebase_core/firebase_core.dart';
-import '../firebase_options.dart';
+
 
 class AuthService {
   static const String _tokenKey = 'auth_token';
@@ -47,6 +45,7 @@ class AuthService {
                 // add more fields if needed
               };
               await _saveToken(data['token']);
+
               await _saveUser(User.fromJson(userMap));
               return {'token': data['token'], 'user': userMap};
             }
@@ -211,7 +210,7 @@ class AuthService {
   Future<void> postCaseComment(String caseId, String content) async {
     final token = await getToken();
     final response = await http.post(
-      Uri.parse('${AppConstants.baseUrl}/cases/$caseId/comments'),
+      Uri.parse('${AppConstants.baseUrl}/cases/$caseId/comment'),
       headers: {
         if (token != null) 'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -223,7 +222,7 @@ class AuthService {
     }
   }
 
-  Future<User?> getUserById(int userId) async {
+  Future<User?> getUserById(String userId) async {
     final token = await getToken();
     final response = await http.get(
       Uri.parse('${AppConstants.usersUrl}/$userId'),
@@ -233,7 +232,7 @@ class AuthService {
       },
     );
     if (response.statusCode == 200) {
-      return User.fromJson(json.decode(response.body));
+      return User.fromJson(json.decode(response.body)['data']);
     } else {
       return null;
     }
@@ -266,6 +265,7 @@ class AuthService {
   }
 
   Future<void> _saveUser(User user) async {
+    
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, json.encode(user.toJson()));
   }
