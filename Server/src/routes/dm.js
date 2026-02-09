@@ -33,6 +33,76 @@ router.post("/send", auth, async(req, res, next)=>{
     }
 });
 
+router.get("/dm/grouped", auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const inbox = await DirectMessage.aggregate([
+      {
+        $match: {
+          $or: [{ sender: userId }, { receiver: userId }]
+        }
+      },
+      {
+        $addFields: {
+          peerUser: {
+            $cond: [
+              { $eq: ["$sender", userId] },
+              "$receiver",
+              "$sender"
+            ]
+          }
+        }
+      },
+      {
+        $group: {
+          _id: { caseId: "$caseId", peerUser: "$peerUser" },
+          messages: { $push: "$$ROOT" }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id.caseId",
+          users: {
+            $push: {
+              userId: "$_id.peerUser",
+              messages: "$messages"
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "crimecases",
+          localField: "_id",
+          foreignField: "_id",
+          as: "case"
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "users.userId",
+          foreignField: "_id",
+          as: "userDetails"
+        }
+      },
+      {
+        $project: {
+          caseId: "$_id",
+          caseTitle: { $arrayElemAt: ["$case.title", 0] },
+          users: 1
+        }
+      }
+    ]);
+
+    res.json(inbox);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 module.exports=router;
 
 /*
