@@ -3,8 +3,8 @@ import '../models/hiring_chat_message.dart';
 import '../services/hiring_service.dart';
 
 class HiringChatScreen extends StatefulWidget {
-  final int applicationId;
-  final int senderId;
+  final String applicationId;
+  final String senderId;
   const HiringChatScreen({
     required this.applicationId,
     required this.senderId,

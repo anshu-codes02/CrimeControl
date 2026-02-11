@@ -19,14 +19,14 @@ class HiringService {
   Future<List<HiringPost>> getPosts() async {
     final token = await _getToken();
     final res = await http.get(
-      Uri.parse('$baseUrl/hiring-posts'),
+      Uri.parse('$baseUrl/hiring/post/'),
       headers: {
         if (token != null) 'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
     );
     if (res.statusCode == 200) {
-      final List data = json.decode(res.body);
+      final List data = json.decode(res.body)['data'];
       return data.map((e) => HiringPost.fromJson(e)).toList();
     }
     throw Exception('Failed to load posts');
@@ -35,31 +35,33 @@ class HiringService {
   Future<HiringPost> createPost(HiringPost post) async {
     final token = await _getToken();
     final res = await http.post(
-      Uri.parse('$baseUrl/hiring-posts'),
+      Uri.parse('$baseUrl/hiring/post/create'),
       headers: {
         if (token != null) 'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
       body: json.encode(post.toJson()),
     );
+    print('Create Post Response: ${res.statusCode} - ${json.decode(res.body)}');
     if (res.statusCode == 200) {
-      return HiringPost.fromJson(json.decode(res.body));
+      return HiringPost.fromJson(json.decode(res.body)['data']);
     }
     throw Exception('Failed to create post');
   }
 
   // --- Applications ---
-  Future<List<HiringApplication>> getApplicationsForPost(int postId) async {
+  Future<List<HiringApplication>> getApplicationsForPost(String postId) async {
     final token = await _getToken();
     final res = await http.get(
-      Uri.parse('$baseUrl/hiring-applications/post/$postId'),
+      Uri.parse('$baseUrl/hiring/application/getAll/$postId'),
       headers: {
         if (token != null) 'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
     );
+    print('Get Applications Response: ${res.statusCode} - ${json.decode(res.body)}');
     if (res.statusCode == 200) {
-      final List data = json.decode(res.body);
+      final List data = json.decode(res.body)['data'];
       return data.map((e) => HiringApplication.fromJson(e)).toList();
     }
     throw Exception('Failed to load applications');
@@ -68,7 +70,7 @@ class HiringService {
   Future<HiringApplication> applyToPost(HiringApplication application) async {
     final token = await _getToken();
     final res = await http.post(
-      Uri.parse('$baseUrl/hiring-applications'),
+      Uri.parse('$baseUrl/hiring/application/apply'),
       headers: {
         if (token != null) 'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -76,13 +78,13 @@ class HiringService {
       body: json.encode(application.toJson()),
     );
     if (res.statusCode == 200) {
-      return HiringApplication.fromJson(json.decode(res.body));
+      return HiringApplication.fromJson(json.decode(res.body)['data']);
     }
     throw Exception('Failed to apply');
   }
 
   // --- Chat ---
-  Future<List<HiringChatMessage>> getChatMessages(int applicationId) async {
+  Future<List<HiringChatMessage>> getChatMessages(String applicationId) async {
     final token = await _getToken();
     final res = await http.get(
       Uri.parse('$baseUrl/hiring-chats/application/$applicationId'),

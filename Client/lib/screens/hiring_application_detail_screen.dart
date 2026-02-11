@@ -22,15 +22,18 @@ class HiringApplicationDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Application #${application.id}')),
+      appBar: AppBar(title: Text('${application.title}')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Applicant ID: ${application.applicantId}'),
+            Text('Applicant : ${application.applicantName}'),
+            Text('Email: ${application.applicantEmail ?? 'N/A'}'),
+            SizedBox(height: 16),
             Text('Cover Letter:'),
             Text(application.coverLetter),
+            SizedBox(height: 24),
             Text('Status: ${application.status ?? ''}'),
             SizedBox(height: 24),
             ElevatedButton(

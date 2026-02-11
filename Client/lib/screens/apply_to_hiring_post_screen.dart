@@ -3,8 +3,8 @@ import '../models/hiring_application.dart';
 import '../services/hiring_service.dart';
 
 class ApplyToHiringPostScreen extends StatefulWidget {
-  final int postId;
-  final int applicantId;
+  final String postId;
+  final String applicantId;
   const ApplyToHiringPostScreen({
     required this.postId,
     required this.applicantId,

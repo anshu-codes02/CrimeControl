@@ -4,13 +4,13 @@ const { Schema } = mongoose;
 
 const HiringApplicationSchema = new Schema(
   {
-    post: {
+    postId: {
       type: Schema.Types.ObjectId,
       ref: "HiringPost",
       required: true
     },
 
-    applicant: {
+    applicantId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true

@@ -43,7 +43,7 @@ class _HiringPostDetailScreenState extends State<HiringPostDetailScreen> {
         builder:
             (_) => ApplyToHiringPostScreen(
               postId: widget.post.id!,
-              applicantId: 2,
+              applicantId: Provider.of<AuthProvider>(context, listen: false).user!.id!,
             ),
       ),
     );
@@ -108,7 +108,7 @@ class _HiringPostDetailScreenState extends State<HiringPostDetailScreen> {
                       itemBuilder: (context, i) {
                         final app = apps[i];
                         return ListTile(
-                          title: Text('Applicant #${app.applicantId}'),
+                          title: Text('Applicant: ${app.applicantName}'),
                           subtitle: Text(app.coverLetter),
                           onTap: () => _openApplicationDetail(app),
                         );

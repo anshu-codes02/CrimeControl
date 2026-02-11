@@ -1,5 +1,5 @@
 class HiringPost {
-  final int? id;
+  final String? id;
   final String recruiterId;
   final double hourlyRate;
   final String caseType;
@@ -20,8 +20,8 @@ class HiringPost {
   });
 
   factory HiringPost.fromJson(Map<String, dynamic> json) => HiringPost(
-    id: json['id'],
-    recruiterId: json['recruiterId'],
+    id: json['_id'],
+    recruiterId: json['recruiter'],
     hourlyRate: (json['hourlyRate'] as num).toDouble(),
     caseType: json['caseType'],
     overview: json['overview'],
@@ -33,7 +33,7 @@ class HiringPost {
 
   Map<String, dynamic> toJson() => {
     if (id != null) 'id': id,
-    'recruiterId': recruiterId,
+    'recruiter': recruiterId,
     'hourlyRate': hourlyRate,
     'caseType': caseType,
     'overview': overview,

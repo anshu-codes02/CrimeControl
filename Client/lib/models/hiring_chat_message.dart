@@ -1,7 +1,7 @@
 class HiringChatMessage {
-  final int? id;
-  final int applicationId;
-  final int senderId;
+  final String? id;
+  final String applicationId;
+  final String senderId;
   final String message;
   final DateTime? timestamp;
 

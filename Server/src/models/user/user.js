@@ -24,8 +24,16 @@ const UserSchema = new mongoose.Schema(
       select: false
     },
 
-    firstName: String,
-    lastName: String,
+    firstName: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    lastName: {
+      type: String,
+      required: true,
+      trim: true
+    },
     bio: String,
     expertise: String,
     location: String,

@@ -5,10 +5,11 @@ const {auth}=require("../middlewares/auth");
 const hiringApplication = require("../models/hiring/hiringApplication");
 
 //create application
-router.post("/create", auth, async(req, res, next)=>{
+router.post("/apply", auth, async(req, res, next)=>{
  try{
     const application= await hiringApplicationService.createHiringApplication(req.body, req.user.id);
-    res.status(200).json({success: true, message: "Hiring application created successfully", data: application});
+    console.log("Created hiring application:", application);
+    return res.status(200).json({success: true, message: "Hiring application created successfully", data: application});
  }catch(err){
     next(err);
  }
@@ -27,11 +28,12 @@ router.get("/:id", auth, async(req, res, next)=>{
 
 //get all applications by post
 
-router.get("/post/:id", auth, async(req, res, next)=>{
+router.get("/getAll/:id", auth, async(req, res, next)=>{
  try
  {
      const applications=await hiringApplicationService.getApplicationsByPost(req.params.id, req.user.id);
-     res.status(200).json({success: true, data: applications});
+     console.log("Fetched applications for post:", applications);
+     return res.status(200).json({success: true, data: applications});
  }catch(err){
     next(err);
  }

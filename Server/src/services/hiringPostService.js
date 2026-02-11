@@ -17,6 +17,5 @@ exports.createHiringPost=async(hiringPostData, userId)=>{
     newHiringPost.createdAt=new Date();
     newHiringPost.status="OPEN";
 
-    await newHiringPost.save();
     return newHiringPost;
 }

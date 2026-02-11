@@ -30,6 +30,7 @@ class _CreateHiringPostScreenState extends State<CreateHiringPostScreen> {
         overview: _overviewController.text,
         location: _locationController.text,
       );
+      print('Submitting Post: ${post.toJson()}');
       await HiringService().createPost(post);
       if (mounted) Navigator.pop(context, true);
     } catch (e) {

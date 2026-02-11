@@ -3,6 +3,7 @@ const router=express.Router();
 const userService=require("../services/userService");
 const {auth}=require("../middlewares/auth");
 const User=require("../models/user/user");
+const user = require("../models/user/user");
 
 
 // User Registration
@@ -24,7 +25,7 @@ router.post("/login", async(req, res, next)=>{
       console.log("log");
         const userData= await userService.authenticateUser(req.body);
         
-        res.status(200).json({success: true, message: "User logged in successfully", token: userData.token, id: userData.user._id,
+        res.status(200).json({success: true, message: "User logged in successfully", token: userData.token, user: userData.user, id: userData.user._id,
             role: userData.user.role,
             username: userData.user.username,
             email: userData.user.email

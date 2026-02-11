@@ -5,8 +5,6 @@ import 'dart:convert';
 import '../models/user.dart';
 import 'dm_chat_screen.dart';
 import '../constants/app_constants.dart';
-import '../providers/auth_provider.dart';
-import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 
 class DMInboxScreen extends StatefulWidget {
@@ -19,7 +17,7 @@ class DMInboxScreen extends StatefulWidget {
 class _DMInboxScreenState extends State<DMInboxScreen> {
   List<dynamic> groupedDMs = [];
   bool isLoading = true;
-  Map<int, bool> expandedCases = {};
+  Map<String, bool> expandedCases = {};
 
   @override
   void initState() {
@@ -33,12 +31,14 @@ class _DMInboxScreenState extends State<DMInboxScreen> {
       Uri.parse('${AppConstants.baseUrl}/dm/grouped'),
       headers: {'Authorization': 'Bearer $token'},
     );
+    print('DM Grouped Response: ${response.statusCode} - ${json.decode(response.body)}');
     if (response.statusCode == 200) {
+
       final List<dynamic> data = json.decode(response.body);
       setState(() {
         groupedDMs = data;
         isLoading = false;
-        expandedCases = {for (var c in data) c['caseId'] as int: false};
+        expandedCases = {for (var c in data) c['caseId'] as String: false};
       });
     } else {
       setState(() {
@@ -48,10 +48,10 @@ class _DMInboxScreenState extends State<DMInboxScreen> {
   }
 
   void _navigateToChat(Map user, Map caseMap) async {
-    final peerUser = User(id: user['userId'], username: user['userName']);
+    final peerUser = User(id: user['userId'], username: user['userName'], firstName: user['firstName'], lastName: user['lastName']);
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => DMChatScreen(peerUser: peerUser)),
+      MaterialPageRoute(builder: (_) => DMChatScreen(peerUser: peerUser, caseId: caseMap['caseId'], caseTitle: caseMap['caseTitle'] ?? 'Unknown Case')),
     );
     fetchGroupedDMs();
   }
@@ -77,7 +77,7 @@ class _DMInboxScreenState extends State<DMInboxScreen> {
                 itemCount: groupedDMs.length,
                 itemBuilder: (context, caseIdx) {
                   final caseMap = groupedDMs[caseIdx];
-                  final caseId = caseMap['caseId'] as int;
+                  final caseId = caseMap['caseId'] as String;
                   final caseTitle = caseMap['caseTitle'] ?? 'Unknown Case';
                   final users = caseMap['users'] as List<dynamic>;
                   final isExpanded = expandedCases[caseId] ?? false;
@@ -112,7 +112,7 @@ class _DMInboxScreenState extends State<DMInboxScreen> {
                         if (isExpanded)
                           ...users
                               .where(
-                                (user) => (user['messages'] as List).isNotEmpty,
+                                (user) => user['messageCount'] > 0,
                               )
                               .map(
                                 (user) => ListTile(
@@ -125,11 +125,11 @@ class _DMInboxScreenState extends State<DMInboxScreen> {
                                     ),
                                   ),
                                   title: Text(
-                                    user['userName'] ?? 'Unknown',
+                                    user['displayName'] ?? 'Unknown',
                                     style: theme.textTheme.labelLarge,
                                   ),
                                   subtitle: Text(
-                                    '${(user['messages'] as List).length} messages',
+                                    '${user['messageCount']} messages',
                                     style: theme.textTheme.bodySmall,
                                   ),
                                   onTap: () => _navigateToChat(user, caseMap),
@@ -139,7 +139,7 @@ class _DMInboxScreenState extends State<DMInboxScreen> {
                             users
                                 .where(
                                   (user) =>
-                                      (user['messages'] as List).isNotEmpty,
+                                      user['messageCount'] > 0,
                                 )
                                 .isEmpty)
                           Padding(

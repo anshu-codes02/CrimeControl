@@ -4,21 +4,22 @@ const HiringPost = require("../models/hiring/hiringPost");
 
 exports.createHiringApplication = async (data, userId) => {
 
-    const existingApp = await HiringApplication.findOne({ applicant: userId, post: data.post });
+    const existingApp = await HiringApplication.findOne({ applicantId: userId, postId: data.postId });
 
     if (existingApp) {
         throw new AppError("You have already applied for this hiring post", 400);
     }
 
     const application = await HiringApplication.create({
-        ...data,
-        user: userId
+        postId: data.postId,
+        applicantId: userId,
+        coverLetter: data.coverLetter
     });
 
     application.createdAt = new Date();
     application.status = "APPLIED";
 
-    return await application.save();
+    return  application;
 }
 
 exports.getApplicationsByPost = async (postId, userId) => {
@@ -32,15 +33,16 @@ exports.getApplicationsByPost = async (postId, userId) => {
         throw new AppError("Unauthorized access", 403);
     }
 
-    const applications = await HiringApplication.find({ post: postId }).populate("applicant");
+    const applications = await HiringApplication.find({ postId: postId }).populate("applicantId");
 
     const filteredApplications = applications.map(application => {
         return {
             id: application._id,
 
-            postId: application.post?._id || null,
+            postId: application.postId || null,
+            title: post.caseType || null,
 
-            applicantId: application.applicant?._id || null,
+            applicantId: application.applicantId?._id || null,
 
             coverLetter: application.coverLetter,
 
@@ -49,19 +51,19 @@ exports.getApplicationsByPost = async (postId, userId) => {
             status: application.status || null,
 
             applicantUsername:
-                application.applicant?.username || null,
+                application.applicantId?.username || null,
 
             applicantEmail:
-                application.applicant?.email || null,
+                application.applicantId?.email || null,
 
             applicantFirstName:
-                application.applicant?.firstName || null,
+                application.applicantId?.firstName || null,
 
             applicantLastName:
-                application.applicant?.lastName || null,
+                application.applicantId?.lastName || null,
 
             applicantRole:
-                application.applicant?.role || null,
+                application.applicantId?.role || null,
         }
     });
     return filteredApplications;

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const HiringPost = require("../models/hiring/hiringPost");
+const { auth } = require("../middlewares/auth");
 
 const hiringPostService = require("../services/hiringPostService");
 const userService = require("../services/userService");
@@ -8,10 +9,12 @@ const userService = require("../services/userService");
 
 // Create a new hiring post
 
-router.post("/create", async(req, res, next)=>{
+router.post("/create",auth, async(req, res, next)=>{
     try{
-        const post= await hiringPostService.createHiringPost(req.body);
-        res.status(200).json({success: true, message: "Hiring post created successfully"});
+        
+        const post= await hiringPostService.createHiringPost(req.body,req.user.id);
+        console.log("Created hiring post:", post);
+        res.status(200).json({success: true, message: "Hiring post created successfully", data: post});
     }catch(err){
         next(err);
     }
