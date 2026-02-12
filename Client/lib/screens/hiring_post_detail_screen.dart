@@ -78,10 +78,14 @@ class _HiringPostDetailScreenState extends State<HiringPostDetailScreen> {
             Text('Hourly Rate: ${widget.post.hourlyRate}'),
             Text('Status: ${widget.post.status ?? ''}'),
             SizedBox(height: 24),
+
+            if(!isRecruiter)...[
+            
             ElevatedButton(
               onPressed: _openApply,
               child: Text('Apply to this Post'),
             ),
+            ],
             SizedBox(height: 24),
             if (isRecruiter) ...[
               Text(

@@ -21,6 +21,7 @@ module.exports=(io)=>{
     });
 
     io.on("connection", (socket)=>{
+        console.log(`User ${socket.userId} connected to socket`);
         socket.join(`user:${socket.userId}`);
         require("../sockets/dmSocket")(io, socket);
     })

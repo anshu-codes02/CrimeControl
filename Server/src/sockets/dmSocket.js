@@ -3,7 +3,7 @@ const dmService=require("../services/dmService");
 
 module.exports=(io, socket)=>{
     socket.on("dm:send", async({receiverId, caseId, content})=>{
-        
+        console.log(`User ${socket.userId} sending DM to ${receiverId} for case ${caseId}: ${content}`);
          if (socket.userId.toString() === receiverId.toString()) {
             return;
          }

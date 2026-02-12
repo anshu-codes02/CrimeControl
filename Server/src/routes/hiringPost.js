@@ -22,7 +22,7 @@ router.post("/create",auth, async(req, res, next)=>{
 
 router.get("/", async(req, res)=>{
     try{
-    const posts= await HiringPost.find({status:"OPEN"});
+    const posts= await HiringPost.find({status:"OPEN"}).sort({createdAt:-1});
     res.status(200).json({success: true, data: posts});
     }catch(err){
         res.status(500).json({success: false, message: "Server Error"});

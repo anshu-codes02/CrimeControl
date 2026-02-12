@@ -11,7 +11,7 @@ const {generateUploadUrl, generateReadUrl, extractS3Key}=require("../services/s3
 router.get('/', async (req, res) => {
     try {
         
-        const cases = await CrimeCase.find();
+        const cases = await CrimeCase.find().sort({ _id: -1 });
         const summaries = cases.map((c) => ({
             id: c._id,
             title: c.title,

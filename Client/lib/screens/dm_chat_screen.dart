@@ -74,6 +74,7 @@ bool isConnected = false;
     socket = IO.io(
     AppConstants.baseUrl.replaceFirst('/api', ''),
     IO.OptionBuilder()
+        .setTransports(['websocket'])
         .setAuth({'token': token})
         .enableAutoConnect()
         .build(),

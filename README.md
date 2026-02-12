@@ -1,7 +1,11 @@
-## CrimeControl 👮‍♂️
+## 👮‍♂️CrimeControl 
 
 **Tagline:**  
 _Revolutionizing collaborative crime-solving with real-time chat, secure media, and recruiter-driven case management._
+
+## 🎥Demo Video
+
+[![CrimeControl Demo](https://img.shields.io/badge/Watch%20Demo-Video-red?style=for-the-badge&logo=youtube)](https://drive.google.com/file/d/1vuswE3EMKZ8y3SANOkNYcEE8sg0CYUQp/view?usp=sharing)
 
 
 
